@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Marketify
+ * Copyright (c) 2025 Marketify
  * Author: Marketify
  * This file is made for CURRENT TEMPLATE
 */
