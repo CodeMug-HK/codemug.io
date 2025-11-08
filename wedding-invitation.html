@@ -113,6 +113,13 @@
             bottom: max(60px, var(--safe-area-inset-bottom));
         }
 
+        /* Mobile Safari specific adjustment */
+        @supports (-webkit-touch-callout: none) {
+            .front-image {
+                bottom: 40px;
+            }
+        }
+
         .card .back {
             transform: rotateY(180deg);
             background-image: url('./back.jpg');
@@ -142,6 +149,13 @@
             animation: pulseHint 2s infinite ease-in-out;
             pointer-events: none;
             box-shadow: 0 4px 15px rgba(170, 129, 89, 0.4);
+        }
+
+        /* Mobile Safari specific adjustment */
+        @supports (-webkit-touch-callout: none) {
+            .swipe-hint {
+                bottom: 40px;
+            }
         }
 
         /* Fallback for browsers that don't support env() */
