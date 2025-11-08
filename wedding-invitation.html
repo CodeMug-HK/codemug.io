@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wedding Invitation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f5f5f5;
+            position: relative;
+        }
+
+        .card-wrapper {
+            perspective: 1000px;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+        }
+
+        .card {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            transition: transform 0.8s ease-in-out;
+            transform-style: preserve-3d;
+        }
+
+        .card .front,
+        .card .back {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .card .front {
+            z-index: 2;
+            background-image: url('./card.jpg');
+        }
+
+        .card .back {
+            transform: rotateY(180deg);
+            background-image: url('./back.jpg');
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 50px;
+        }
+
+        .card-wrapper:hover .card {
+            transform: rotateY(180deg);
+        }
+
+        .swipe-hint {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            text-align: center;
+            z-index: 15;
+            animation: fadeInOut 2s infinite;
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .card-wrapper:hover .card {
+                transform: none;
+            }
+            
+            .card-wrapper.flipped .card {
+                transform: rotateY(180deg);
+            }
+        }
+
+        /* Fireworks CSS */
+        @keyframes firework {
+            0% { transform: translate(var(--x), var(--initialY)); width: var(--initialSize); opacity: 1; }
+            50% { width: 0.5vmin; opacity: 1; }
+            100% { width: var(--finalSize); opacity: 0; }
+        }
+
+        .firework,
+        .firework::before,
+        .firework::after {
+            --initialSize: 0.5vmin;
+            --finalSize: 45vmin;
+            --particleSize: 0.2vmin;
+            --color1: yellow;
+            --color2: khaki;
+            --color3: white;
+            --color4: lime;
+            --color5: gold;
+            --color6: mediumseagreen;
+            --y: -30vmin;
+            --x: -50%;
+            --initialY: 60vmin;
+            content: "";
+            animation: firework 2s infinite;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, var(--y));
+            width: var(--initialSize);
+            aspect-ratio: 1;
+            z-index: 10;
+            background: 
+                radial-gradient(circle, var(--color1) var(--particleSize), #0000 0) 50% 0%,
+                radial-gradient(circle, var(--color2) var(--particleSize), #0000 0) 100% 50%,
+                radial-gradient(circle, var(--color3) var(--particleSize), #0000 0) 50% 100%,
+                radial-gradient(circle, var(--color4) var(--particleSize), #0000 0) 0% 50%,
+                radial-gradient(circle, var(--color5) var(--particleSize), #0000 0) 80% 90%,
+                radial-gradient(circle, var(--color6) var(--particleSize), #0000 0) 95% 90%,
+                radial-gradient(circle, var(--color1) var(--particleSize), #0000 0) 90% 70%,
+                radial-gradient(circle, var(--color2) var(--particleSize), #0000 0) 100% 60%,
+                radial-gradient(circle, var(--color3) var(--particleSize), #0000 0) 55% 80%,
+                radial-gradient(circle, var(--color4) var(--particleSize), #0000 0) 70% 77%,
+                radial-gradient(circle, var(--color5) var(--particleSize), #0000 0) 22% 90%,
+                radial-gradient(circle, var(--color6) var(--particleSize), #0000 0) 45% 90%,
+                radial-gradient(circle, var(--color1) var(--particleSize), #0000 0) 33% 70%,
+                radial-gradient(circle, var(--color2) var(--particleSize), #0000 0) 10% 60%,
+                radial-gradient(circle, var(--color3) var(--particleSize), #0000 0) 31% 80%,
+                radial-gradient(circle, var(--color4) var(--particleSize), #0000 0) 28% 77%,
+                radial-gradient(circle, var(--color5) var(--particleSize), #0000 0) 13% 72%,
+                radial-gradient(circle, var(--color6) var(--particleSize), #0000 0) 80% 10%,
+                radial-gradient(circle, var(--color1) var(--particleSize), #0000 0) 95% 14%,
+                radial-gradient(circle, var(--color2) var(--particleSize), #0000 0) 90% 23%,
+                radial-gradient(circle, var(--color3) var(--particleSize), #0000 0) 100% 43%,
+                radial-gradient(circle, var(--color4) var(--particleSize), #0000 0) 85% 27%,
+                radial-gradient(circle, var(--color5) var(--particleSize), #0000 0) 77% 37%,
+                radial-gradient(circle, var(--color6) var(--particleSize), #0000 0) 60% 7%,
+                radial-gradient(circle, var(--color1) var(--particleSize), #0000 0) 22% 14%,
+                radial-gradient(circle, var(--color1) var(--particleSize), #0000 0) 45% 20%,
+                radial-gradient(circle, var(--color1) var(--particleSize), #0000 0) 33% 34%,
+                radial-gradient(circle, var(--color1) var(--particleSize), #0000 0) 10% 29%,
+                radial-gradient(circle, var(--color1) var(--particleSize), #0000 0) 31% 37%,
+                radial-gradient(circle, var(--color1) var(--particleSize), #0000 0) 28% 7%,
+                radial-gradient(circle, var(--color1) var(--particleSize), #0000 0) 13% 42%;
+            background-size: var(--initialSize) var(--initialSize);
+            background-repeat: no-repeat;
+        }
+
+        .firework::before {
+            --x: -50%;
+            --y: -50%;
+            --initialY: -50%;
+            transform: translate(-50%, -50%) rotate(40deg) scale(1.3) rotateY(40deg);
+        }
+
+        .firework::after {
+            --x: -50%;
+            --y: -50%;
+            --initialY: -50%;
+            transform: translate(-50%, -50%) rotate(170deg) scale(1.15) rotateY(-30deg);
+        }
+
+        .firework:nth-child(2) {
+            --x: 30vmin;
+        }
+
+        .firework:nth-child(2),
+        .firework:nth-child(2)::before,
+        .firework:nth-child(2)::after {
+            --color1: pink;
+            --color2: violet;
+            --color3: fuchsia;
+            --color4: orchid;
+            --color5: plum;
+            --color6: lavender;
+            --finalSize: 40vmin;
+            left: 30%;
+            top: 60%;
+            animation-delay: -0.25s;
+        }
+
+        .firework:nth-child(3) {
+            --x: -30vmin;
+            --y: -50vmin;
+        }
+
+        .firework:nth-child(3),
+        .firework:nth-child(3)::before,
+        .firework:nth-child(3)::after {
+            --color1: cyan;
+            --color2: lightcyan;
+            --color3: lightblue;
+            --color4: PaleTurquoise;
+            --color5: SkyBlue;
+            --color6: lavender;
+            --finalSize: 35vmin;
+            left: 70%;
+            top: 60%;
+            animation-delay: -0.4s;
+        }
+
+        .firework:nth-child(4),
+        .firework:nth-child(4)::before,
+        .firework:nth-child(4)::after {
+            --color1: red;
+            --color2: orange;
+            --color3: coral;
+            --color4: tomato;
+            --color5: crimson;
+            --color6: salmon;
+            --finalSize: 42vmin;
+            left: 20%;
+            top: 40%;
+            animation-delay: -0.6s;
+        }
+
+        .firework:nth-child(5),
+        .firework:nth-child(5)::before,
+        .firework:nth-child(5)::after {
+            --color1: purple;
+            --color2: magenta;
+            --color3: hotpink;
+            --color4: mediumorchid;
+            --color5: blueviolet;
+            --color6: mediumpurple;
+            --finalSize: 38vmin;
+            left: 80%;
+            top: 30%;
+            animation-delay: -0.8s;
+        }
+
+        .firework:nth-child(6),
+        .firework:nth-child(6)::before,
+        .firework:nth-child(6)::after {
+            --color1: limegreen;
+            --color2: springgreen;
+            --color3: mediumspringgreen;
+            --color4: forestgreen;
+            --color5: chartreuse;
+            --color6: lawngreen;
+            --finalSize: 36vmin;
+            left: 15%;
+            top: 70%;
+            animation-delay: -1.0s;
+        }
+
+        .firework:nth-child(7),
+        .firework:nth-child(7)::before,
+        .firework:nth-child(7)::after {
+            --color1: gold;
+            --color2: orange;
+            --color3: darkorange;
+            --color4: goldenrod;
+            --color5: darkgoldenrod;
+            --color6: wheat;
+            --finalSize: 44vmin;
+            left: 85%;
+            top: 75%;
+            animation-delay: -1.2s;
+        }
+
+        .firework:nth-child(8),
+        .firework:nth-child(8)::before,
+        .firework:nth-child(8)::after {
+            --color1: deepskyblue;
+            --color2: dodgerblue;
+            --color3: royalblue;
+            --color4: steelblue;
+            --color5: cornflowerblue;
+            --color6: lightskyblue;
+            --finalSize: 39vmin;
+            left: 60%;
+            top: 20%;
+            animation-delay: -1.4s;
+        }
+
+        .firework:nth-child(9),
+        .firework:nth-child(9)::before,
+        .firework:nth-child(9)::after {
+            --color1: lightcoral;
+            --color2: indianred;
+            --color3: rosybrown;
+            --color4: lightpink;
+            --color5: palevioletred;
+            --color6: mistyrose;
+            --finalSize: 37vmin;
+            left: 40%;
+            top: 80%;
+            animation-delay: -1.6s;
+        }
+
+        .firework:nth-child(10),
+        .firework:nth-child(10)::before,
+        .firework:nth-child(10)::after {
+            --color1: turquoise;
+            --color2: aquamarine;
+            --color3: mediumturquoise;
+            --color4: darkturquoise;
+            --color5: cadetblue;
+            --color6: powderblue;
+            --finalSize: 41vmin;
+            left: 75%;
+            top: 45%;
+            animation-delay: -1.8s;
+        }
+
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+            transform: translateY(200px);
+            opacity: 0;
+            transition: transform 1.2s ease-out 0.8s, opacity 1.2s ease-out 0.8s;
+        }
+
+        .card-wrapper.flipped .button-container,
+        .card-wrapper:hover .button-container {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        button {
+            padding: 18px 40px;
+            font-size: 18px;
+            font-weight: 500;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            min-width: 220px;
+            transition: all 0.3s ease;
+            background-color: rgba(255, 255, 255, 0.95);
+            color: #333;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        button:hover {
+            background-color: rgba(255, 255, 255, 1);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="firework"></div>
+    <div class="firework"></div>
+    <div class="firework"></div>
+    <div class="firework"></div>
+    <div class="firework"></div>
+    <div class="firework"></div>
+    <div class="firework"></div>
+    <div class="firework"></div>
+    <div class="firework"></div>
+    <div class="firework"></div>
+    
+    <div class="card-wrapper" id="cardWrapper">
+        <div class="card">
+            <div class="front"></div>
+            <div class="back">
+                <div class="button-container">
+                    <button class="google-map-btn" onclick="openGoogleMap()">Google Map</button>
+                    <button class="guide-btn" onclick="openGuide()">Getting There</button>
+                </div>
+            </div>
+        </div>
+        <div class="swipe-hint">
+            Hover or tap to reveal more
+        </div>
+    </div>
+
+    <script>
+        const cardWrapper = document.getElementById('cardWrapper');
+        
+        // Touch/click event for mobile devices
+        cardWrapper.addEventListener('click', function() {
+            if (window.innerWidth <= 768) {
+                cardWrapper.classList.toggle('flipped');
+            }
+        });
+
+        // Optional: Add swipe gesture support
+        let startX = 0;
+        let startY = 0;
+
+        cardWrapper.addEventListener('touchstart', function(e) {
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+        }, { passive: true });
+
+        cardWrapper.addEventListener('touchend', function(e) {
+            if (!startX || !startY) return;
+            
+            let endX = e.changedTouches[0].clientX;
+            let endY = e.changedTouches[0].clientY;
+            
+            let diffX = startX - endX;
+            let diffY = startY - endY;
+            
+            // Check if it's a horizontal swipe (left or right)
+            if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+                cardWrapper.classList.toggle('flipped');
+            }
+            
+            startX = 0;
+            startY = 0;
+        }, { passive: true });
+
+        function openGoogleMap() {
+            window.open('https://maps.app.goo.gl/UECrURv7Ngab3DUf9', '_blank');
+        }
+        
+        function openGuide() {
+            window.open('guide.pdf', '_blank');
+        }
+    </script>
+</body>
+
+</html>
