@@ -20,6 +20,13 @@
     <meta property="twitter:description" content="You're invited to celebrate Kate & Ken's wedding on December 1st, 2025 at The Henderson - Cloud 39, Hong Kong">
     <meta property="twitter:image" content="./preview.png">
     <style>
+        :root {
+            --safe-area-inset-top: env(safe-area-inset-top);
+            --safe-area-inset-right: env(safe-area-inset-right);
+            --safe-area-inset-bottom: env(safe-area-inset-bottom);
+            --safe-area-inset-left: env(safe-area-inset-left);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -30,11 +37,14 @@
             font-family: Arial, sans-serif;
             width: 100vw;
             height: 100vh;
+            overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
             background-color: #f5f5f5;
-            position: relative;
+            position: fixed;
+            top: 0;
+            left: 0;
         }
 
         .card-wrapper {
@@ -42,6 +52,7 @@
             width: 100vw;
             height: 100vh;
             z-index: 1;
+            position: relative;
         }
 
         .card {
@@ -85,9 +96,9 @@
         }
 
         .swipe-hint {
-            position: fixed;
-            bottom: max(20px, env(safe-area-inset-bottom));
-            right: max(20px, env(safe-area-inset-right));
+            position: absolute;
+            bottom: max(20px, var(--safe-area-inset-bottom));
+            right: max(20px, var(--safe-area-inset-right));
             background: #AA8159;
             border-radius: 50%;
             width: 56px;
@@ -365,7 +376,7 @@
             transform: translateY(200px);
             opacity: 0;
             transition: transform 1.2s ease-out 0.8s, opacity 1.2s ease-out 0.8s;
-            padding-bottom: max(20px, env(safe-area-inset-bottom));
+            padding-bottom: max(20px, var(--safe-area-inset-bottom));
         }
 
         /* Fallback for browsers that don't support env() */
@@ -462,6 +473,65 @@
         function openGuide() {
             window.open('guide.pdf', '_blank');
         }
+
+        // JavaScript Safe Area Detection and Dynamic Adjustment
+        function getSafeAreaInsets() {
+            const testElement = document.createElement('div');
+            testElement.style.cssText = `
+                position: fixed;
+                top: env(safe-area-inset-top);
+                right: env(safe-area-inset-right);
+                bottom: env(safe-area-inset-bottom);
+                left: env(safe-area-inset-left);
+                pointer-events: none;
+                visibility: hidden;
+            `;
+            document.body.appendChild(testElement);
+            
+            const computedStyle = getComputedStyle(testElement);
+            const insets = {
+                top: parseInt(computedStyle.top) || 0,
+                right: parseInt(computedStyle.right) || 0,
+                bottom: parseInt(computedStyle.bottom) || 0,
+                left: parseInt(computedStyle.left) || 0
+            };
+            
+            document.body.removeChild(testElement);
+            return insets;
+        }
+
+        function applySafeAreaAdjustments() {
+            const insets = getSafeAreaInsets();
+            const root = document.documentElement;
+            
+            // Update CSS custom properties with detected values
+            root.style.setProperty('--detected-safe-area-top', `${insets.top}px`);
+            root.style.setProperty('--detected-safe-area-right', `${insets.right}px`);
+            root.style.setProperty('--detected-safe-area-bottom', `${insets.bottom}px`);
+            root.style.setProperty('--detected-safe-area-left', `${insets.left}px`);
+            
+            // Apply fallback positioning if safe areas are detected but CSS env() isn't working
+            const mapButton = document.querySelector('.swipe-hint');
+            const buttonContainer = document.querySelector('.button-container');
+            
+            if (mapButton && (insets.bottom > 0 || insets.right > 0)) {
+                mapButton.style.bottom = `${Math.max(20, insets.bottom)}px`;
+                mapButton.style.right = `${Math.max(20, insets.right)}px`;
+            }
+            
+            if (buttonContainer && insets.bottom > 0) {
+                buttonContainer.style.paddingBottom = `${Math.max(20, insets.bottom)}px`;
+            }
+            
+            console.log('Safe area insets detected:', insets);
+        }
+
+        // Apply safe area adjustments on load and orientation change
+        document.addEventListener('DOMContentLoaded', applySafeAreaAdjustments);
+        window.addEventListener('orientationchange', () => {
+            setTimeout(applySafeAreaAdjustments, 100);
+        });
+        window.addEventListener('resize', applySafeAreaAdjustments);
 
     </script>
 </body>
