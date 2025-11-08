@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wedding Invitation</title>
+    <title>Kate & Ken Wedding Invitation</title>
     <style>
         * {
             margin: 0;
@@ -71,22 +71,6 @@
             transform: rotateY(180deg);
         }
 
-        .swipe-hint {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 14px;
-            text-align: center;
-            z-index: 15;
-            animation: fadeInOut 2s infinite;
-        }
-
-        @keyframes fadeInOut {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 1; }
-        }
 
         @media (max-width: 768px) {
             .card-wrapper:hover .card {
@@ -399,9 +383,6 @@
                     <button class="guide-btn" onclick="openGuide()">Getting There</button>
                 </div>
             </div>
-        </div>
-        <div class="swipe-hint">
-            Hover or tap to reveal more
         </div>
     </div>
 
