@@ -376,7 +376,7 @@
             transform: translateY(200px);
             opacity: 0;
             transition: transform 1.2s ease-out 0.8s, opacity 1.2s ease-out 0.8s;
-            padding-bottom: max(20px, var(--safe-area-inset-bottom));
+            padding-bottom: max(60px, var(--safe-area-inset-bottom));
         }
 
         /* Fallback for browsers that don't support env() */
@@ -532,6 +532,23 @@
             setTimeout(applySafeAreaAdjustments, 100);
         });
         window.addEventListener('resize', applySafeAreaAdjustments);
+
+        // Prevent scrolling and zooming
+        document.addEventListener('touchmove', function(e) {
+            e.preventDefault();
+        }, { passive: false });
+
+        document.addEventListener('gesturestart', function(e) {
+            e.preventDefault();
+        });
+
+        document.addEventListener('gesturechange', function(e) {
+            e.preventDefault();
+        });
+
+        document.addEventListener('gestureend', function(e) {
+            e.preventDefault();
+        });
 
     </script>
 </body>
