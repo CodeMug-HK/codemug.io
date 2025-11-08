@@ -115,6 +115,13 @@
             bottom: max(60px, var(--safe-area-inset-bottom));
         }
 
+        /* Chrome specific adjustment */
+        @media screen and (-webkit-min-device-pixel-ratio: 0) and (min-resolution: 0.001dpcm) {
+            .front-image {
+                height: 80%;
+            }
+        }
+
         /* Mobile Safari specific adjustment */
         @supports (-webkit-touch-callout: none) {
             .front-image {
