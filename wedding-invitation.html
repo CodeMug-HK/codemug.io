@@ -35,10 +35,10 @@
             justify-content: center;
             align-items: center;
             background-color: #f5f5f5;
-            position: relative;
             position: fixed;
             top: 0;
             left: 0;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
         }
 
         .card-wrapper {
@@ -90,8 +90,8 @@
 
         .swipe-hint {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
+            bottom: max(20px, env(safe-area-inset-bottom));
+            right: max(20px, env(safe-area-inset-right));
             background: #AA8159;
             border-radius: 50%;
             width: 56px;
@@ -106,16 +106,8 @@
             box-shadow: 0 4px 15px rgba(170, 129, 89, 0.4);
         }
 
-        /* iOS Safari specific safe area support */
-        @supports (bottom: env(safe-area-inset-bottom)) {
-            .swipe-hint {
-                bottom: calc(20px + env(safe-area-inset-bottom));
-                right: calc(20px + env(safe-area-inset-right));
-            }
-        }
-
-        /* iOS Chrome fallback */
-        @media screen and (max-width: 768px) {
+        /* Fallback for browsers that don't support env() */
+        @supports not (bottom: env(safe-area-inset-bottom)) {
             .swipe-hint {
                 bottom: 40px;
                 right: 20px;
@@ -377,18 +369,11 @@
             transform: translateY(200px);
             opacity: 0;
             transition: transform 1.2s ease-out 0.8s, opacity 1.2s ease-out 0.8s;
-            padding-bottom: 20px;
+            padding-bottom: max(20px, env(safe-area-inset-bottom));
         }
 
-        /* iOS Safari specific safe area support */
-        @supports (bottom: env(safe-area-inset-bottom)) {
-            .button-container {
-                padding-bottom: calc(20px + env(safe-area-inset-bottom));
-            }
-        }
-
-        /* iOS Chrome fallback */
-        @media screen and (max-width: 768px) {
+        /* Fallback for browsers that don't support env() */
+        @supports not (bottom: env(safe-area-inset-bottom)) {
             .button-container {
                 padding-bottom: 40px;
             }
