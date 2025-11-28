@@ -326,9 +326,10 @@
             '#FFFFFF', '#FFF5EE', '#FFFAF0', '#FAF0E6', '#FFD39B'
         ];
 
-        // Background stars
+        // Background stars (fewer on mobile)
         const stars = [];
-        for (let i = 0; i < 200; i++) {
+        const starCount = isMobile ? 80 : 200;
+        for (let i = 0; i < starCount; i++) {
             stars.push({
                 x: Math.random() * width,
                 y: Math.random() * height,
@@ -362,8 +363,8 @@
                 this.y += this.vy;
                 this.vy += gravity * 0.5;
 
-                // Sparks
-                if (Math.random() < 0.7) {
+                // Sparks (reduced on mobile)
+                if (Math.random() < (isMobile ? 0.3 : 0.7)) {
                     sparks.push({
                         x: this.x + (Math.random() - 0.5) * 6,
                         y: this.y,
@@ -382,8 +383,9 @@
             }
 
             draw() {
-                // Draw trail with glow
-                for (let i = 0; i < this.trail.length; i++) {
+                // Draw trail (simplified on mobile)
+                const step = isMobile ? 2 : 1;
+                for (let i = 0; i < this.trail.length; i += step) {
                     const t = this.trail[i];
                     const alpha = i / this.trail.length;
                     const size = alpha * 5;
@@ -393,15 +395,19 @@
                     ctx.fill();
                 }
 
-                // Rocket head with glow
-                ctx.save();
-                ctx.shadowBlur = 25;
-                ctx.shadowColor = this.type === 'boy' ? '#5BA3EC' : '#FF6BB3';
+                // Rocket head (no shadowBlur on mobile)
+                if (!isMobile) {
+                    ctx.save();
+                    ctx.shadowBlur = 25;
+                    ctx.shadowColor = this.type === 'boy' ? '#5BA3EC' : '#FF6BB3';
+                }
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, 5, 0, Math.PI * 2);
                 ctx.fillStyle = '#FFF';
                 ctx.fill();
-                ctx.restore();
+                if (!isMobile) {
+                    ctx.restore();
+                }
             }
 
             explode() {
@@ -676,10 +682,12 @@
             }
 
             update() {
+                // Trails (shorter on mobile)
+                const maxTrail = isMobile ? 10 : 20;
                 if (this.type === 'chrysanthemum' || this.type === 'willow' ||
                     this.type === 'kamuro' || this.type === 'palm' || this.type === 'spiral') {
                     this.trail.push({ x: this.x, y: this.y, life: this.life });
-                    if (this.trail.length > 20) this.trail.shift();
+                    if (this.trail.length > maxTrail) this.trail.shift();
                 }
 
                 if (this.type === 'spiral' && this.spin) {
@@ -721,10 +729,14 @@
                     ctx.globalAlpha = 1;
                 }
 
-                ctx.save();
                 ctx.globalAlpha = this.life;
-                ctx.shadowBlur = this.twinkle ? 35 : 20;
-                ctx.shadowColor = this.color;
+
+                // Only use shadowBlur on desktop (expensive on mobile)
+                if (!isMobile) {
+                    ctx.save();
+                    ctx.shadowBlur = this.twinkle ? 35 : 20;
+                    ctx.shadowColor = this.color;
+                }
 
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.twinkle ? this.size * 1.8 : this.size, 0, Math.PI * 2);
@@ -736,7 +748,10 @@
                 ctx.fillStyle = '#FFF';
                 ctx.fill();
 
-                ctx.restore();
+                if (!isMobile) {
+                    ctx.restore();
+                }
+                ctx.globalAlpha = 1;
             }
         }
 
