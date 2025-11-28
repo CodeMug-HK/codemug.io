@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Live Vote Results - Hearts</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: linear-gradient(180deg, #0a0a1a 0%, #1a1a3e 50%, #0a0a1a 100%);
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .score-board {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 60px;
+            z-index: 20;
+        }
+
+        .score {
+            text-align: center;
+            min-width: 120px;
+        }
+
+        .score-icon {
+            font-size: 50px;
+            display: block;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 0 20px currentColor);
+        }
+
+        .score-count {
+            font-size: 72px;
+            font-weight: 800;
+            display: block;
+            line-height: 1;
+            text-shadow: 0 0 30px currentColor;
+        }
+
+        .score.boy .score-count {
+            color: #5BA3EC;
+            text-shadow:
+                0 0 40px rgba(91, 163, 236, 1),
+                0 0 80px rgba(91, 163, 236, 0.8),
+                0 6px 12px rgba(0, 0, 0, 0.8),
+                0 3px 6px rgba(0, 0, 0, 0.6),
+                2px 2px 4px rgba(0, 0, 0, 0.9);
+        }
+
+        .score.girl .score-count {
+            color: #FF6BB3;
+            text-shadow:
+                0 0 40px rgba(255, 107, 179, 1),
+                0 0 80px rgba(255, 107, 179, 0.8),
+                0 6px 12px rgba(0, 0, 0, 0.8),
+                0 3px 6px rgba(0, 0, 0, 0.6),
+                2px 2px 4px rgba(0, 0, 0, 0.9);
+        }
+
+        .score-label {
+            font-size: 18px;
+            color: rgba(255,255,255,0.6);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 5px;
+        }
+
+        .vs-text {
+            font-size: 36px;
+            font-weight: 800;
+            color: rgba(255,255,255,0.3);
+            align-self: center;
+        }
+
+        .side-label {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 120px;
+            opacity: 0.08;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .side-label.boy {
+            left: 8%;
+        }
+
+        .side-label.girl {
+            right: 8%;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="canvas"></canvas>
+
+    <div class="overlay">
+        <div class="score-board">
+            <div class="score boy">
+                <span class="score-icon">👦🏻</span>
+                <span class="score-count" id="boyCount">0</span>
+                <span class="score-label">男仔 Boy</span>
+            </div>
+            <div class="vs-text">VS</div>
+            <div class="score girl">
+                <span class="score-icon">👧🏻</span>
+                <span class="score-count" id="girlCount">0</span>
+                <span class="score-label">女仔 Girl</span>
+            </div>
+        </div>
+
+        <div class="side-label boy">👦🏻</div>
+        <div class="side-label girl">👧🏻</div>
+
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <script>
+        // Matter.js setup
+        const { Engine, Render, Runner, Bodies, Body, Composite, Events, Mouse, MouseConstraint } = Matter;
+
+        const canvas = document.getElementById('canvas');
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        canvas.width = width;
+        canvas.height = height;
+
+        // Create engine - hearts float gently upward
+        const engine = Engine.create({
+            gravity: { x: 0, y: -0.4 }
+        });
+
+        const ctx = canvas.getContext('2d');
+
+        // Heart tracking
+        const heartBodies = [];
+        let currentBoyCount = 0;
+        let currentGirlCount = 0;
+
+        // Create boundaries
+        const wallThickness = 50;
+
+        // Ceiling
+        const ceiling = Bodies.rectangle(
+            width / 2, -wallThickness / 2,
+            width, wallThickness,
+            { isStatic: true, friction: 0.3, restitution: 0.4 }
+        );
+
+        // Left wall
+        const leftWall = Bodies.rectangle(
+            -wallThickness / 2, height / 2,
+            wallThickness, height,
+            { isStatic: true, friction: 0.3, restitution: 0.4 }
+        );
+
+        // Right wall
+        const rightWall = Bodies.rectangle(
+            width + wallThickness / 2, height / 2,
+            wallThickness, height,
+            { isStatic: true, friction: 0.3, restitution: 0.4 }
+        );
+
+        // Center divider
+        const dividerHeight = height * 2;
+        const divider = Bodies.rectangle(
+            width / 2, height / 2,
+            30, dividerHeight,
+            { isStatic: true, friction: 0.2, restitution: 0.5 }
+        );
+
+        Composite.add(engine.world, [ceiling, leftWall, rightWall, divider]);
+
+        // Mouse interaction
+        const mouse = Mouse.create(canvas);
+        const mouseConstraint = MouseConstraint.create(engine, {
+            mouse: mouse,
+            constraint: {
+                stiffness: 0.15,
+                render: { visible: false }
+            }
+        });
+        Composite.add(engine.world, mouseConstraint);
+
+        // Draw a heart shape
+        function drawHeart(ctx, x, y, size) {
+            ctx.beginPath();
+            ctx.moveTo(x, y + size * 0.3);
+
+            // Left curve
+            ctx.bezierCurveTo(
+                x - size * 0.5, y - size * 0.3,
+                x - size, y + size * 0.3,
+                x, y + size
+            );
+
+            // Right curve
+            ctx.bezierCurveTo(
+                x + size, y + size * 0.3,
+                x + size * 0.5, y - size * 0.3,
+                x, y + size * 0.3
+            );
+
+            ctx.closePath();
+        }
+
+        // Color variations
+        const blueColors = [
+            { light: '#a8d4ff', mid: '#5BA3EC', dark: '#2d6cb5' },
+            { light: '#b8e0ff', mid: '#4db8ff', dark: '#2080c0' },
+            { light: '#c0e8ff', mid: '#70c0f0', dark: '#3090d0' },
+        ];
+
+        const pinkColors = [
+            { light: '#ffc0e0', mid: '#FF6BB3', dark: '#d04080' },
+            { light: '#ffd0e8', mid: '#ff80c0', dark: '#e05090' },
+            { light: '#ffb8d8', mid: '#ff5090', dark: '#c03070' },
+        ];
+
+        // Create a heart
+        function createHeart(type) {
+            const size = 14 + Math.random() * 10;
+            const centerX = width / 2;
+
+            let x;
+            if (type === 'boy') {
+                x = 50 + Math.random() * (centerX - 100);
+            } else {
+                x = centerX + 50 + Math.random() * (centerX - 100);
+            }
+
+            // Random properties for animation
+            const pulsePhase = Math.random() * Math.PI * 2;
+            const pulseSpeed = 2 + Math.random() * 2;
+            const colorIndex = Math.floor(Math.random() * 3);
+
+            const heart = Bodies.circle(x, height + 50 + Math.random() * 100, size, {
+                restitution: 0.4,
+                friction: 0.05,
+                frictionAir: 0.012,
+                density: 0.0004,
+                label: type,
+                pulsePhase: pulsePhase,
+                pulseSpeed: pulseSpeed,
+                heartSize: size,
+                colorIndex: colorIndex,
+                render: { fillStyle: type === 'boy' ? '#5BA3EC' : '#FF6BB3' }
+            });
+
+            // Gentle drift with slight sway
+            Body.setVelocity(heart, {
+                x: (Math.random() - 0.5) * 2,
+                y: -Math.random() * 2.5
+            });
+
+            // Slight wobble
+            Body.setAngularVelocity(heart, (Math.random() - 0.5) * 0.02);
+
+            Composite.add(engine.world, heart);
+            heartBodies.push(heart);
+        }
+
+        // Animation time
+        let time = 0;
+
+        // Custom render function
+        function render() {
+            time += 0.016;
+            ctx.clearRect(0, 0, width, height);
+
+            // Draw center divider with subtle glow
+            ctx.save();
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = 'rgba(255, 255, 255, 0.3)';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+            ctx.fillRect(width / 2 - 15, 0, 30, height);
+            ctx.restore();
+
+            // Draw hearts
+            heartBodies.forEach(heart => {
+                const pos = heart.position;
+                const size = heart.heartSize || heart.circleRadius;
+                const type = heart.label;
+                const rotation = heart.angle;
+                const pulsePhase = heart.pulsePhase || 0;
+                const pulseSpeed = heart.pulseSpeed || 3;
+                const colorIdx = heart.colorIndex || 0;
+
+                // Pulse effect (gentle heartbeat)
+                const pulse = 1 + Math.sin(time * pulseSpeed + pulsePhase) * 0.08;
+                const currentSize = size * pulse;
+
+                // Get colors
+                const colors = type === 'boy'
+                    ? blueColors[colorIdx % blueColors.length]
+                    : pinkColors[colorIdx % pinkColors.length];
+
+                ctx.save();
+                ctx.translate(pos.x, pos.y);
+                ctx.rotate(rotation);
+                ctx.scale(pulse, pulse);
+
+                // Outer glow
+                ctx.shadowBlur = 25;
+                ctx.shadowColor = type === 'boy'
+                    ? 'rgba(91, 163, 236, 0.6)'
+                    : 'rgba(255, 107, 179, 0.6)';
+
+                // Heart gradient
+                const gradient = ctx.createRadialGradient(
+                    -size * 0.2, -size * 0.2, 0,
+                    0, size * 0.3, size * 1.5
+                );
+                gradient.addColorStop(0, colors.light);
+                gradient.addColorStop(0.4, colors.mid);
+                gradient.addColorStop(1, colors.dark);
+
+                ctx.fillStyle = gradient;
+                drawHeart(ctx, 0, -size * 0.3, size);
+                ctx.fill();
+
+                // Reset shadow for shine
+                ctx.shadowBlur = 0;
+
+                // Shine highlight
+                const shineGradient = ctx.createRadialGradient(
+                    -size * 0.3, -size * 0.1, 0,
+                    -size * 0.3, -size * 0.1, size * 0.5
+                );
+                shineGradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+                shineGradient.addColorStop(0.4, 'rgba(255, 255, 255, 0.3)');
+                shineGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                ctx.fillStyle = shineGradient;
+                ctx.beginPath();
+                ctx.ellipse(-size * 0.25, -size * 0.05, size * 0.3, size * 0.25, -0.3, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Small sparkle
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                ctx.beginPath();
+                ctx.arc(-size * 0.4, -size * 0.15, size * 0.08, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.restore();
+            });
+
+            requestAnimationFrame(render);
+        }
+
+        // Start engine and renderer
+        const runner = Runner.create();
+        Runner.run(runner, engine);
+        render();
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            location.reload();
+        });
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyD8Hb1xk3b3OblKxpoYWp7EGS3UY5Ppoxg",
+            authDomain: "wedding-4c258.firebaseapp.com",
+            projectId: "wedding-4c258",
+            storageBucket: "wedding-4c258.firebasestorage.app",
+            messagingSenderId: "135234203012",
+            appId: "1:135234203012:web:a10b04f87c5ad4f31b41d1",
+            measurementId: "G-T38F6H0CGX"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const votesRef = db.collection('votes').doc('genderPoll');
+
+        // Real-time listener
+        votesRef.onSnapshot((doc) => {
+            if (doc.exists) {
+                const data = doc.data();
+                const boyVotes = data.boy || 0;
+                const girlVotes = data.girl || 0;
+
+                document.getElementById('boyCount').textContent = boyVotes;
+                document.getElementById('girlCount').textContent = girlVotes;
+
+                const newBoyVotes = boyVotes - currentBoyCount;
+                const newGirlVotes = girlVotes - currentGirlCount;
+
+                for (let i = 0; i < newBoyVotes; i++) {
+                    setTimeout(() => createHeart('boy'), i * 150);
+                }
+                for (let i = 0; i < newGirlVotes; i++) {
+                    setTimeout(() => createHeart('girl'), i * 150);
+                }
+
+                currentBoyCount = boyVotes;
+                currentGirlCount = girlVotes;
+            }
+        });
+
+        // Initialize with existing votes
+        votesRef.get().then((doc) => {
+            if (doc.exists) {
+                const data = doc.data();
+                const boyVotes = data.boy || 0;
+                const girlVotes = data.girl || 0;
+
+                const maxInitial = 80;
+                for (let i = 0; i < Math.min(boyVotes, maxInitial); i++) {
+                    setTimeout(() => createHeart('boy'), i * 30);
+                }
+                for (let i = 0; i < Math.min(girlVotes, maxInitial); i++) {
+                    setTimeout(() => createHeart('girl'), i * 30);
+                }
+
+                currentBoyCount = boyVotes;
+                currentGirlCount = girlVotes;
+            }
+        });
+
+        // Listen for reveal
+        let revealed = false;
+        const revealRef = db.collection('votes').doc('reveal');
+        revealRef.onSnapshot((doc) => {
+            if (doc.exists && doc.data().revealed === true && !revealed) {
+                revealed = true;
+                showBoyReveal();
+            }
+        });
+
+        // Boy reveal animation
+        function showBoyReveal() {
+            // Pink hearts break and fly away
+            const pinkHearts = heartBodies.filter(b => b.label === 'girl');
+            pinkHearts.forEach((heart, i) => {
+                setTimeout(() => {
+                    Body.setVelocity(heart, {
+                        x: (Math.random() - 0.5) * 40,
+                        y: -20 - Math.random() * 20
+                    });
+                    Body.setAngularVelocity(heart, (Math.random() - 0.5) * 0.5);
+                }, i * 30);
+            });
+
+            // Remove after flying away
+            setTimeout(() => {
+                pinkHearts.forEach(heart => {
+                    Composite.remove(engine.world, heart);
+                    const index = heartBodies.indexOf(heart);
+                    if (index > -1) heartBodies.splice(index, 1);
+                });
+            }, 1000);
+
+            // Hide girl score
+            setTimeout(() => {
+                document.querySelector('.score.girl').style.transition = 'all 1s ease';
+                document.querySelector('.score.girl').style.opacity = '0';
+                document.querySelector('.score.girl').style.transform = 'scale(0)';
+                document.querySelector('.vs-text').style.transition = 'all 1s ease';
+                document.querySelector('.vs-text').style.opacity = '0';
+            }, 500);
+
+            // Remove divider
+            setTimeout(() => {
+                Composite.remove(engine.world, divider);
+            }, 800);
+
+            // Flood with blue hearts
+            setTimeout(() => {
+                for (let i = 0; i < 100; i++) {
+                    setTimeout(() => {
+                        const size = 14 + Math.random() * 10;
+                        const heart = Bodies.circle(
+                            Math.random() * width,
+                            height + 50 + Math.random() * 200,
+                            size,
+                            {
+                                restitution: 0.4,
+                                friction: 0.05,
+                                frictionAir: 0.012,
+                                density: 0.0004,
+                                label: 'boy',
+                                pulsePhase: Math.random() * Math.PI * 2,
+                                pulseSpeed: 2 + Math.random() * 2,
+                                heartSize: size,
+                                colorIndex: Math.floor(Math.random() * 3)
+                            }
+                        );
+                        Body.setVelocity(heart, {
+                            x: (Math.random() - 0.5) * 3,
+                            y: -Math.random() * 3
+                        });
+                        Composite.add(engine.world, heart);
+                        heartBodies.push(heart);
+                    }, i * 50);
+                }
+            }, 1200);
+
+            // Show reveal message
+            setTimeout(() => {
+                showRevealOverlay();
+            }, 1500);
+        }
+
+        function showRevealOverlay() {
+            const overlay = document.createElement('div');
+            overlay.innerHTML = `
+                <div class="reveal-overlay">
+                    <div class="reveal-content">
+                        <div class="reveal-emoji">👦🏻</div>
+                        <div class="reveal-title">係男仔！</div>
+                        <div class="reveal-subtitle">IT'S A BOY!</div>
+                        <div class="reveal-sparkles">💙 💖 💙 💖 💙</div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+
+            const style = document.createElement('style');
+            style.textContent = `
+                .reveal-overlay {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 9999;
+                    pointer-events: none;
+                    background: rgba(0, 0, 0, 0.75);
+                    animation: overlayFadeIn 1s ease forwards;
+                }
+                @keyframes overlayFadeIn {
+                    from { opacity: 0; background: rgba(0, 0, 0, 0); }
+                    to { opacity: 1; background: rgba(0, 0, 0, 0.75); }
+                }
+                .reveal-content {
+                    text-align: center;
+                    animation: revealBounce 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+                }
+                @keyframes revealBounce {
+                    0% { transform: scale(0) rotate(-10deg); opacity: 0; }
+                    50% { transform: scale(1.2) rotate(5deg); }
+                    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+                }
+                .reveal-emoji {
+                    font-size: 120px;
+                    animation: emojiFloat 2s ease-in-out infinite;
+                    filter: drop-shadow(0 0 30px rgba(91, 163, 236, 0.8));
+                }
+                @keyframes emojiFloat {
+                    0%, 100% { transform: translateY(0); }
+                    50% { transform: translateY(-20px); }
+                }
+                .reveal-title {
+                    font-size: 72px;
+                    font-weight: 900;
+                    color: #5BA3EC;
+                    text-shadow:
+                        0 0 20px rgba(91, 163, 236, 0.8),
+                        0 0 40px rgba(91, 163, 236, 0.6),
+                        0 0 60px rgba(91, 163, 236, 0.4),
+                        0 4px 0 #2E5FA3;
+                    margin: 20px 0;
+                    animation: titlePulse 1.5s ease-in-out infinite;
+                }
+                @keyframes titlePulse {
+                    0%, 100% {
+                        text-shadow:
+                            0 0 20px rgba(91, 163, 236, 0.8),
+                            0 0 40px rgba(91, 163, 236, 0.6),
+                            0 0 60px rgba(91, 163, 236, 0.4),
+                            0 4px 0 #2E5FA3;
+                    }
+                    50% {
+                        text-shadow:
+                            0 0 30px rgba(91, 163, 236, 1),
+                            0 0 60px rgba(91, 163, 236, 0.8),
+                            0 0 90px rgba(91, 163, 236, 0.6),
+                            0 4px 0 #2E5FA3;
+                    }
+                }
+                .reveal-subtitle {
+                    font-size: 48px;
+                    font-weight: 700;
+                    color: white;
+                    text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+                    letter-spacing: 8px;
+                }
+                .reveal-sparkles {
+                    font-size: 36px;
+                    margin-top: 20px;
+                    animation: sparkleRotate 3s linear infinite;
+                }
+                @keyframes sparkleRotate {
+                    0% { transform: rotate(-5deg); }
+                    50% { transform: rotate(5deg); }
+                    100% { transform: rotate(-5deg); }
+                }
+            `;
+            document.head.appendChild(style);
+
+            // Continuous blue hearts
+            setInterval(() => {
+                if (heartBodies.length < 500) {
+                    const size = 14 + Math.random() * 10;
+                    const heart = Bodies.circle(
+                        Math.random() * width,
+                        height + 50,
+                        size,
+                        {
+                            restitution: 0.4,
+                            friction: 0.05,
+                            frictionAir: 0.012,
+                            density: 0.0004,
+                            label: 'boy',
+                            pulsePhase: Math.random() * Math.PI * 2,
+                            pulseSpeed: 2 + Math.random() * 2,
+                            heartSize: size,
+                            colorIndex: Math.floor(Math.random() * 3)
+                        }
+                    );
+                    Body.setVelocity(heart, {
+                        x: (Math.random() - 0.5) * 2,
+                        y: -Math.random() * 2
+                    });
+                    Composite.add(engine.world, heart);
+                    heartBodies.push(heart);
+                }
+            }, 150);
+        }
+    </script>
+</body>
+
+</html>
