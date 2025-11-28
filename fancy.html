@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Live Vote Results</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: linear-gradient(180deg, #0a0a1a 0%, #1a1a3e 50%, #0a0a1a 100%);
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .score-board {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 60px;
+            z-index: 20;
+        }
+
+        .score {
+            text-align: center;
+            min-width: 120px;
+        }
+
+        .score-icon {
+            font-size: 50px;
+            display: block;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 0 20px currentColor);
+        }
+
+        .score-count {
+            font-size: 72px;
+            font-weight: 800;
+            display: block;
+            line-height: 1;
+            text-shadow: 0 0 30px currentColor;
+        }
+
+        .score.boy .score-count {
+            color: #5BA3EC;
+        }
+
+        .score.girl .score-count {
+            color: #FF6BB3;
+        }
+
+        .score-label {
+            font-size: 18px;
+            color: rgba(255,255,255,0.6);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 5px;
+        }
+
+        .vs-text {
+            font-size: 36px;
+            font-weight: 800;
+            color: rgba(255,255,255,0.3);
+            align-self: center;
+        }
+
+        .total-display {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            text-align: center;
+        }
+
+        .total-label {
+            font-size: 16px;
+            color: rgba(255,255,255,0.5);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        .total-count {
+            font-size: 48px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #5BA3EC, #FF6BB3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .live-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,0,0,0.2);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 14px;
+            color: #ff6b6b;
+            margin-top: 10px;
+        }
+
+        .live-dot {
+            width: 10px;
+            height: 10px;
+            background: #ff6b6b;
+            border-radius: 50%;
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+        }
+
+        .side-label {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 120px;
+            opacity: 0.08;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .side-label.boy {
+            left: 8%;
+        }
+
+        .side-label.girl {
+            right: 8%;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="canvas"></canvas>
+
+    <div class="overlay">
+        <div class="score-board">
+            <div class="score boy">
+                <span class="score-icon">👦🏻</span>
+                <span class="score-count" id="boyCount">0</span>
+                <span class="score-label">男仔 Boy</span>
+            </div>
+            <div class="vs-text">VS</div>
+            <div class="score girl">
+                <span class="score-icon">👧🏻</span>
+                <span class="score-count" id="girlCount">0</span>
+                <span class="score-label">女仔 Girl</span>
+            </div>
+        </div>
+
+        <div class="side-label boy">👦🏻</div>
+        <div class="side-label girl">👧🏻</div>
+
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <script>
+        // Matter.js setup
+        const { Engine, Render, Runner, Bodies, Body, Composite, Events, Mouse, MouseConstraint } = Matter;
+
+        const canvas = document.getElementById('canvas');
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        canvas.width = width;
+        canvas.height = height;
+
+        // Create engine with better settings
+        const engine = Engine.create({
+            gravity: { x: 0, y: 1.2 }
+        });
+
+        // Custom rendering with canvas
+        const ctx = canvas.getContext('2d');
+
+        // Ball tracking
+        const ballBodies = [];
+        let currentBoyCount = 0;
+        let currentGirlCount = 0;
+
+        // Create boundaries
+        const wallThickness = 50;
+        const topBarrier = 0;
+        const bottomBarrier = 0;
+
+        // Floor
+        const floor = Bodies.rectangle(
+            width / 2, height - bottomBarrier / 2 + 25,
+            width, wallThickness,
+            { isStatic: true, friction: 0.8, restitution: 0.3 }
+        );
+
+        // Left wall
+        const leftWall = Bodies.rectangle(
+            -wallThickness / 2, height / 2,
+            wallThickness, height,
+            { isStatic: true, friction: 0.5, restitution: 0.5 }
+        );
+
+        // Right wall
+        const rightWall = Bodies.rectangle(
+            width + wallThickness / 2, height / 2,
+            wallThickness, height,
+            { isStatic: true, friction: 0.5, restitution: 0.5 }
+        );
+
+        // Center divider - make it thick enough so balls can't pass through
+        const dividerHeight = height * 2;
+        const divider = Bodies.rectangle(
+            width / 2, height / 2,
+            30, dividerHeight,
+            { isStatic: true, friction: 0.3, restitution: 0.4 }
+        );
+
+        Composite.add(engine.world, [floor, leftWall, rightWall, divider]);
+
+        // Add mouse interaction
+        const mouse = Mouse.create(canvas);
+        const mouseConstraint = MouseConstraint.create(engine, {
+            mouse: mouse,
+            constraint: {
+                stiffness: 0.2,
+                render: { visible: false }
+            }
+        });
+        Composite.add(engine.world, mouseConstraint);
+
+        // Create a ball
+        function createBall(type) {
+            const radius = 15 + Math.random() * 10;
+            const centerX = width / 2;
+
+            let x;
+            if (type === 'boy') {
+                // Spawn boy balls on left side, away from center
+                x = 50 + Math.random() * (centerX - 100);
+            } else {
+                // Spawn girl balls on right side, away from center
+                x = centerX + 50 + Math.random() * (centerX - 100);
+            }
+
+            const ball = Bodies.circle(x, -50 - Math.random() * 100, radius, {
+                restitution: 0.4,
+                friction: 0.1,
+                frictionAir: 0.005,
+                density: 0.002,
+                label: type,
+                render: { fillStyle: type === 'boy' ? '#5BA3EC' : '#FF6BB3' }
+            });
+
+            // Less horizontal velocity to prevent crossing
+            Body.setVelocity(ball, {
+                x: (Math.random() - 0.5) * 3,
+                y: Math.random() * 2
+            });
+
+            // Add slight spin
+            Body.setAngularVelocity(ball, (Math.random() - 0.5) * 0.1);
+
+            Composite.add(engine.world, ball);
+            ballBodies.push(ball);
+        }
+
+        // Custom render function
+        function render() {
+            ctx.clearRect(0, 0, width, height);
+
+            // Draw center divider with glow
+            ctx.save();
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = 'rgba(255, 255, 255, 0.5)';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.fillRect(width / 2 - 15, 0, 30, height);
+            ctx.restore();
+
+            // Draw balls
+            ballBodies.forEach(ball => {
+                const pos = ball.position;
+                const radius = ball.circleRadius;
+                const type = ball.label;
+
+                ctx.save();
+                ctx.translate(pos.x, pos.y);
+
+                // Outer glow
+                ctx.shadowBlur = 25;
+                ctx.shadowColor = type === 'boy' ? 'rgba(91, 163, 236, 0.8)' : 'rgba(255, 107, 179, 0.8)';
+
+                // Main ball - glass/bubble effect
+                const ballGradient = ctx.createRadialGradient(
+                    -radius * 0.4, -radius * 0.4, 0,
+                    0, 0, radius * 1.1
+                );
+                if (type === 'boy') {
+                    ballGradient.addColorStop(0, 'rgba(200, 230, 255, 0.95)');
+                    ballGradient.addColorStop(0.2, 'rgba(91, 163, 236, 0.9)');
+                    ballGradient.addColorStop(0.6, 'rgba(59, 130, 200, 0.85)');
+                    ballGradient.addColorStop(0.9, 'rgba(30, 80, 150, 0.9)');
+                    ballGradient.addColorStop(1, 'rgba(20, 60, 120, 0.95)');
+                } else {
+                    ballGradient.addColorStop(0, 'rgba(255, 220, 240, 0.95)');
+                    ballGradient.addColorStop(0.2, 'rgba(255, 107, 179, 0.9)');
+                    ballGradient.addColorStop(0.6, 'rgba(230, 60, 140, 0.85)');
+                    ballGradient.addColorStop(0.9, 'rgba(180, 30, 110, 0.9)');
+                    ballGradient.addColorStop(1, 'rgba(140, 20, 90, 0.95)');
+                }
+
+                ctx.fillStyle = ballGradient;
+                ctx.beginPath();
+                ctx.arc(0, 0, radius, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Reset shadow for details
+                ctx.shadowBlur = 0;
+
+                // Glass shine - top highlight
+                const shineGradient = ctx.createRadialGradient(
+                    -radius * 0.35, -radius * 0.35, 0,
+                    -radius * 0.35, -radius * 0.35, radius * 0.5
+                );
+                shineGradient.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
+                shineGradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.4)');
+                shineGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                ctx.fillStyle = shineGradient;
+                ctx.beginPath();
+                ctx.arc(-radius * 0.35, -radius * 0.35, radius * 0.5, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Small sparkle dot
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+                ctx.beginPath();
+                ctx.arc(-radius * 0.4, -radius * 0.45, radius * 0.12, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Bottom reflection (subtle)
+                const bottomShine = ctx.createRadialGradient(
+                    radius * 0.2, radius * 0.4, 0,
+                    radius * 0.2, radius * 0.4, radius * 0.4
+                );
+                bottomShine.addColorStop(0, 'rgba(255, 255, 255, 0.2)');
+                bottomShine.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                ctx.fillStyle = bottomShine;
+                ctx.beginPath();
+                ctx.arc(radius * 0.2, radius * 0.4, radius * 0.4, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Rim light
+                const rimGradient = ctx.createLinearGradient(-radius, 0, radius, 0);
+                rimGradient.addColorStop(0, 'rgba(255, 255, 255, 0.3)');
+                rimGradient.addColorStop(0.5, 'rgba(255, 255, 255, 0)');
+                rimGradient.addColorStop(1, 'rgba(255, 255, 255, 0.15)');
+                ctx.strokeStyle = rimGradient;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(0, 0, radius - 1, 0, Math.PI * 2);
+                ctx.stroke();
+
+                ctx.restore();
+            });
+
+            requestAnimationFrame(render);
+        }
+
+        // Start engine and renderer
+        const runner = Runner.create();
+        Runner.run(runner, engine);
+        render();
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            location.reload();
+        });
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyD8Hb1xk3b3OblKxpoYWp7EGS3UY5Ppoxg",
+            authDomain: "wedding-4c258.firebaseapp.com",
+            projectId: "wedding-4c258",
+            storageBucket: "wedding-4c258.firebasestorage.app",
+            messagingSenderId: "135234203012",
+            appId: "1:135234203012:web:a10b04f87c5ad4f31b41d1",
+            measurementId: "G-T38F6H0CGX"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const votesRef = db.collection('votes').doc('genderPoll');
+
+        // Real-time listener
+        votesRef.onSnapshot((doc) => {
+            if (doc.exists) {
+                const data = doc.data();
+                const boyVotes = data.boy || 0;
+                const girlVotes = data.girl || 0;
+                const total = boyVotes + girlVotes;
+
+                // Update display
+                document.getElementById('boyCount').textContent = boyVotes;
+                document.getElementById('girlCount').textContent = girlVotes;
+
+                // Add new balls for new votes
+                const newBoyVotes = boyVotes - currentBoyCount;
+                const newGirlVotes = girlVotes - currentGirlCount;
+
+                for (let i = 0; i < newBoyVotes; i++) {
+                    setTimeout(() => createBall('boy'), i * 150);
+                }
+                for (let i = 0; i < newGirlVotes; i++) {
+                    setTimeout(() => createBall('girl'), i * 150);
+                }
+
+                currentBoyCount = boyVotes;
+                currentGirlCount = girlVotes;
+            }
+        });
+
+        // Initialize with existing votes on load
+        votesRef.get().then((doc) => {
+            if (doc.exists) {
+                const data = doc.data();
+                const boyVotes = data.boy || 0;
+                const girlVotes = data.girl || 0;
+
+                // Add balls for existing votes (staggered, limited for performance)
+                const maxInitial = 80;
+                for (let i = 0; i < Math.min(boyVotes, maxInitial); i++) {
+                    setTimeout(() => createBall('boy'), i * 30);
+                }
+                for (let i = 0; i < Math.min(girlVotes, maxInitial); i++) {
+                    setTimeout(() => createBall('girl'), i * 30);
+                }
+
+                currentBoyCount = boyVotes;
+                currentGirlCount = girlVotes;
+            }
+        });
+
+        // Listen for reveal
+        let revealed = false;
+        const revealRef = db.collection('votes').doc('reveal');
+        revealRef.onSnapshot((doc) => {
+            if (doc.exists && doc.data().revealed === true && !revealed) {
+                revealed = true;
+                showBoyReveal();
+            }
+        });
+
+        // Epic boy reveal animation
+        function showBoyReveal() {
+            // Remove all pink balls with explosion effect
+            const pinkBalls = ballBodies.filter(b => b.label === 'girl');
+            pinkBalls.forEach(ball => {
+                // Shoot them off screen
+                Body.setVelocity(ball, {
+                    x: (Math.random() - 0.5) * 50,
+                    y: -30 - Math.random() * 20
+                });
+            });
+
+            // After pink balls fly away, remove them
+            setTimeout(() => {
+                pinkBalls.forEach(ball => {
+                    Composite.remove(engine.world, ball);
+                    const index = ballBodies.indexOf(ball);
+                    if (index > -1) ballBodies.splice(index, 1);
+                });
+            }, 1000);
+
+            // Hide girl score
+            setTimeout(() => {
+                document.querySelector('.score.girl').style.transition = 'all 1s ease';
+                document.querySelector('.score.girl').style.opacity = '0';
+                document.querySelector('.score.girl').style.transform = 'scale(0)';
+                document.querySelector('.vs-text').style.transition = 'all 1s ease';
+                document.querySelector('.vs-text').style.opacity = '0';
+            }, 500);
+
+            // Remove divider
+            setTimeout(() => {
+                Composite.remove(engine.world, divider);
+            }, 800);
+
+            // Rain down LOTS of blue balls
+            setTimeout(() => {
+                for (let i = 0; i < 100; i++) {
+                    setTimeout(() => {
+                        const ball = Bodies.circle(
+                            Math.random() * width,
+                            -50 - Math.random() * 200,
+                            15 + Math.random() * 15,
+                            {
+                                restitution: 0.5,
+                                friction: 0.1,
+                                frictionAir: 0.005,
+                                density: 0.002,
+                                label: 'boy'
+                            }
+                        );
+                        Body.setVelocity(ball, {
+                            x: (Math.random() - 0.5) * 5,
+                            y: Math.random() * 5
+                        });
+                        Composite.add(engine.world, ball);
+                        ballBodies.push(ball);
+                    }, i * 50);
+                }
+            }, 1200);
+
+            // Show reveal message
+            setTimeout(() => {
+                showRevealOverlay();
+            }, 1500);
+        }
+
+        function showRevealOverlay() {
+            const overlay = document.createElement('div');
+            overlay.innerHTML = `
+                <div class="reveal-overlay">
+                    <div class="reveal-content">
+                        <div class="reveal-emoji">👦🏻</div>
+                        <div class="reveal-title">係男仔！</div>
+                        <div class="reveal-subtitle">IT'S A BOY!</div>
+                        <div class="reveal-sparkles">✨ 🎉 💙 🎊 ✨</div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+
+            // Add styles
+            const style = document.createElement('style');
+            style.textContent = `
+                .reveal-overlay {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 9999;
+                    pointer-events: none;
+                    background: rgba(0, 0, 0, 0.75);
+                    animation: overlayFadeIn 1s ease forwards;
+                }
+                @keyframes overlayFadeIn {
+                    from { opacity: 0; background: rgba(0, 0, 0, 0); }
+                    to { opacity: 1; background: rgba(0, 0, 0, 0.75); }
+                }
+                .reveal-content {
+                    text-align: center;
+                    animation: revealBounce 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+                }
+                @keyframes revealBounce {
+                    0% { transform: scale(0) rotate(-10deg); opacity: 0; }
+                    50% { transform: scale(1.2) rotate(5deg); }
+                    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+                }
+                .reveal-emoji {
+                    font-size: 120px;
+                    animation: emojiFloat 2s ease-in-out infinite;
+                    filter: drop-shadow(0 0 30px rgba(91, 163, 236, 0.8));
+                }
+                @keyframes emojiFloat {
+                    0%, 100% { transform: translateY(0); }
+                    50% { transform: translateY(-20px); }
+                }
+                .reveal-title {
+                    font-size: 72px;
+                    font-weight: 900;
+                    color: #5BA3EC;
+                    text-shadow:
+                        0 0 20px rgba(91, 163, 236, 0.8),
+                        0 0 40px rgba(91, 163, 236, 0.6),
+                        0 0 60px rgba(91, 163, 236, 0.4),
+                        0 4px 0 #2E5FA3;
+                    margin: 20px 0;
+                    animation: titlePulse 1.5s ease-in-out infinite;
+                }
+                @keyframes titlePulse {
+                    0%, 100% {
+                        text-shadow:
+                            0 0 20px rgba(91, 163, 236, 0.8),
+                            0 0 40px rgba(91, 163, 236, 0.6),
+                            0 0 60px rgba(91, 163, 236, 0.4),
+                            0 4px 0 #2E5FA3;
+                    }
+                    50% {
+                        text-shadow:
+                            0 0 30px rgba(91, 163, 236, 1),
+                            0 0 60px rgba(91, 163, 236, 0.8),
+                            0 0 90px rgba(91, 163, 236, 0.6),
+                            0 4px 0 #2E5FA3;
+                    }
+                }
+                .reveal-subtitle {
+                    font-size: 48px;
+                    font-weight: 700;
+                    color: white;
+                    text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+                    letter-spacing: 8px;
+                }
+                .reveal-sparkles {
+                    font-size: 36px;
+                    margin-top: 20px;
+                    animation: sparkleRotate 3s linear infinite;
+                }
+                @keyframes sparkleRotate {
+                    0% { transform: rotate(-5deg); }
+                    50% { transform: rotate(5deg); }
+                    100% { transform: rotate(-5deg); }
+                }
+            `;
+            document.head.appendChild(style);
+
+            // Continuous blue ball rain
+            setInterval(() => {
+                if (ballBodies.length < 500) {
+                    const ball = Bodies.circle(
+                        Math.random() * width,
+                        -50,
+                        12 + Math.random() * 12,
+                        {
+                            restitution: 0.5,
+                            friction: 0.1,
+                            frictionAir: 0.005,
+                            density: 0.002,
+                            label: 'boy'
+                        }
+                    );
+                    Composite.add(engine.world, ball);
+                    ballBodies.push(ball);
+                }
+            }, 100);
+        }
+    </script>
+</body>
+
+</html>

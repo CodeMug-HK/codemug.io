@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Baby Gender Vote</title>
+    <style>
+        :root {
+            --safe-area-inset-bottom: env(safe-area-inset-bottom);
+            --blue: #5BA3EC;
+            --blue-dark: #2E5FA3;
+            --pink: #FF6BB3;
+            --pink-dark: #B8157A;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: #0a0a1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Animated gradient background */
+        .bg-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(ellipse at 20% 80%, rgba(91, 163, 236, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(255, 107, 179, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(91, 163, 236, 0.05) 0%, transparent 70%),
+                linear-gradient(180deg, #0a0a1a 0%, #1a1a3e 50%, #0a0a1a 100%);
+            animation: bgPulse 8s ease-in-out infinite;
+            z-index: -3;
+        }
+
+        @keyframes bgPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        /* Floating orbs */
+        .orbs {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(40px);
+            animation: floatOrb 20s ease-in-out infinite;
+        }
+
+        .orb.blue {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(91, 163, 236, 0.4) 0%, transparent 70%);
+            left: -100px;
+            top: 20%;
+        }
+
+        .orb.pink {
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, rgba(255, 107, 179, 0.3) 0%, transparent 70%);
+            right: -80px;
+            bottom: 20%;
+            animation-delay: -10s;
+        }
+
+        .orb.small {
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            left: 50%;
+            top: 10%;
+            animation-delay: -5s;
+        }
+
+        @keyframes floatOrb {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(30px, -30px) scale(1.1); }
+            50% { transform: translate(0, -50px) scale(1); }
+            75% { transform: translate(-30px, -20px) scale(0.9); }
+        }
+
+        /* Main container */
+        .vote-container {
+            width: 100%;
+            max-width: 420px;
+            padding: 40px 25px max(50px, var(--safe-area-inset-bottom));
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            border-radius: 30px;
+            transition: background 1s ease, box-shadow 1s ease;
+        }
+
+        .vote-container.boy-winning {
+        }
+
+        .vote-container.girl-winning {
+        }
+
+        .vote-container.tie {
+        }
+
+        /* Baby icon */
+        .baby-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: bounce 2s ease-in-out infinite;
+            filter: drop-shadow(0 5px 15px rgba(255,255,255,0.2));
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .vote-question {
+            color: white;
+            font-size: 32px;
+            margin-bottom: 12px;
+            font-weight: 700;
+            text-shadow: 0 2px 20px rgba(255,255,255,0.3);
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .vote-subtitle {
+            color: rgba(255,255,255,0.6);
+            font-size: 18px;
+            margin-bottom: 40px;
+            animation: fadeInUp 0.8s ease-out 0.1s both;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Vote buttons */
+        .vote-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 40px;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+            transition: all 0.5s ease;
+        }
+
+        .vote-buttons.hidden {
+            display: none;
+        }
+
+        .vote-question.hidden,
+        .vote-subtitle.hidden,
+        .baby-icon.hidden {
+            display: none;
+        }
+
+        .results-card.hidden {
+            display: none;
+        }
+
+        /* Thank you message after voting */
+        .thank-you {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .thank-you-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+            display: block;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        .thank-you-text {
+            font-size: 28px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 20px rgba(255,255,255,0.3);
+        }
+
+        .thank-you-subtext {
+            font-size: 16px;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .your-vote {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: 600;
+            margin-top: 15px;
+        }
+
+        .your-vote.boy {
+            background: linear-gradient(135deg, rgba(91, 163, 236, 0.3) 0%, rgba(91, 163, 236, 0.1) 100%);
+            color: var(--blue);
+            border: 2px solid var(--blue);
+        }
+
+        .your-vote.girl {
+            background: linear-gradient(135deg, rgba(255, 107, 179, 0.3) 0%, rgba(255, 107, 179, 0.1) 100%);
+            color: var(--pink);
+            border: 2px solid var(--pink);
+        }
+
+        .vote-btn {
+            padding: 24px 40px;
+            font-size: 24px;
+            font-weight: 700;
+            border: none;
+            border-radius: 24px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            min-width: 150px;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .vote-btn::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent 30%,
+                rgba(255,255,255,0.1) 50%,
+                transparent 70%
+            );
+            transform: rotate(45deg) translateY(-100%);
+            transition: transform 0.6s ease;
+        }
+
+        .vote-btn:hover::before {
+            transform: rotate(45deg) translateY(100%);
+        }
+
+        .vote-btn .icon {
+            display: block;
+            font-size: 44px;
+            margin-bottom: 8px;
+        }
+
+        .vote-btn.boy {
+            background: linear-gradient(135deg, #5BA3EC 0%, #3D7DC9 50%, #2E5FA3 100%);
+            color: white;
+            box-shadow:
+                0 10px 30px rgba(91, 163, 236, 0.3),
+                inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+
+        .vote-btn.girl {
+            background: linear-gradient(135deg, #FF6BB3 0%, #E91E8C 50%, #B8157A 100%);
+            color: white;
+            box-shadow:
+                0 10px 30px rgba(255, 107, 179, 0.3),
+                inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+
+        .vote-btn:hover:not(:disabled) {
+            transform: scale(1.1) translateY(-5px);
+        }
+
+        .vote-btn.boy:hover:not(:disabled) {
+            box-shadow:
+                0 20px 40px rgba(91, 163, 236, 0.5),
+                0 0 60px rgba(91, 163, 236, 0.3),
+                inset 0 1px 0 rgba(255,255,255,0.3);
+        }
+
+        .vote-btn.girl:hover:not(:disabled) {
+            box-shadow:
+                0 20px 40px rgba(255, 107, 179, 0.5),
+                0 0 60px rgba(255, 107, 179, 0.3),
+                inset 0 1px 0 rgba(255,255,255,0.3);
+        }
+
+        .vote-btn:disabled {
+            cursor: not-allowed;
+        }
+
+        .vote-btn.selected {
+            transform: scale(1.08);
+        }
+
+        .vote-btn.selected.boy {
+            box-shadow:
+                0 0 0 3px white,
+                0 0 30px rgba(91, 163, 236, 0.6),
+                0 0 60px rgba(91, 163, 236, 0.4),
+                0 0 100px rgba(91, 163, 236, 0.2);
+            animation: selectedPulseBlue 2s ease-in-out infinite;
+        }
+
+        .vote-btn.selected.girl {
+            box-shadow:
+                0 0 0 3px white,
+                0 0 30px rgba(255, 107, 179, 0.6),
+                0 0 60px rgba(255, 107, 179, 0.4),
+                0 0 100px rgba(255, 107, 179, 0.2);
+            animation: selectedPulsePink 2s ease-in-out infinite;
+        }
+
+        @keyframes selectedPulseBlue {
+            0%, 100% {
+                box-shadow:
+                    0 0 0 3px white,
+                    0 0 30px rgba(91, 163, 236, 0.6),
+                    0 0 60px rgba(91, 163, 236, 0.4),
+                    0 0 100px rgba(91, 163, 236, 0.2);
+            }
+            50% {
+                box-shadow:
+                    0 0 0 3px white,
+                    0 0 40px rgba(91, 163, 236, 0.8),
+                    0 0 80px rgba(91, 163, 236, 0.5),
+                    0 0 120px rgba(91, 163, 236, 0.3);
+            }
+        }
+
+        @keyframes selectedPulsePink {
+            0%, 100% {
+                box-shadow:
+                    0 0 0 3px white,
+                    0 0 30px rgba(255, 107, 179, 0.6),
+                    0 0 60px rgba(255, 107, 179, 0.4),
+                    0 0 100px rgba(255, 107, 179, 0.2);
+            }
+            50% {
+                box-shadow:
+                    0 0 0 3px white,
+                    0 0 40px rgba(255, 107, 179, 0.8),
+                    0 0 80px rgba(255, 107, 179, 0.5),
+                    0 0 120px rgba(255, 107, 179, 0.3);
+            }
+        }
+
+        .vote-btn.not-selected {
+            opacity: 0.4;
+            transform: scale(0.9);
+            filter: grayscale(30%);
+        }
+
+        /* When hovering on buttons container, dim the non-hovered one */
+        .vote-buttons:hover .vote-btn.selected:not(:hover) {
+            opacity: 0.4;
+            transform: scale(0.9);
+            filter: grayscale(30%);
+            animation: none;
+            box-shadow: none;
+        }
+
+        .vote-buttons:hover .vote-btn.not-selected:hover {
+            opacity: 1;
+            transform: scale(1.1) translateY(-5px);
+            filter: grayscale(0%);
+        }
+
+        .vote-buttons:hover .vote-btn.selected:hover {
+            opacity: 1;
+            transform: scale(1.1) translateY(-5px);
+            filter: grayscale(0%);
+        }
+
+        /* Results section */
+        .results-card {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 30px;
+            border: 1px solid rgba(255,255,255,0.1);
+            animation: fadeInUp 0.8s ease-out 0.4s both;
+            position: relative;
+            overflow: hidden;
+        }
+
+
+        .results-title {
+            color: rgba(255,255,255,0.7);
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        /* Win/Lose reveal */
+        .reveal-result {
+            text-align: center;
+            padding: 30px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .reveal-icon {
+            font-size: 80px;
+            display: block;
+            margin-bottom: 20px;
+        }
+
+        .reveal-text {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .reveal-text.win {
+            color: #4ade80;
+            text-shadow: 0 0 30px rgba(74, 222, 128, 0.5);
+        }
+
+        .reveal-text.lose {
+            color: #f87171;
+            text-shadow: 0 0 30px rgba(248, 113, 113, 0.5);
+        }
+
+        .reveal-subtext {
+            font-size: 18px;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .reveal-answer {
+            margin-top: 20px;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--blue);
+            text-shadow: 0 0 20px rgba(91, 163, 236, 0.5);
+        }
+
+        /* Vote battle display */
+        .vote-battle {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .vote-side {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            border-radius: 16px;
+            transition: all 0.5s ease;
+        }
+
+        .vote-side.boy {
+            background: linear-gradient(135deg, rgba(91, 163, 236, 0.2) 0%, rgba(91, 163, 236, 0.05) 100%);
+        }
+
+        .vote-side.girl {
+            background: linear-gradient(135deg, rgba(255, 107, 179, 0.05) 0%, rgba(255, 107, 179, 0.2) 100%);
+        }
+
+        .vote-side.winning {
+            transform: scale(1.05);
+        }
+
+        .vote-side.winning.boy {
+            box-shadow: 0 0 30px rgba(91, 163, 236, 0.4);
+        }
+
+        .vote-side.winning.girl {
+            box-shadow: 0 0 30px rgba(255, 107, 179, 0.4);
+        }
+
+        .vote-side-icon {
+            font-size: 40px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .vote-side-count {
+            font-size: 48px;
+            font-weight: 800;
+            display: block;
+            line-height: 1;
+            margin-bottom: 5px;
+        }
+
+        .vote-side.boy .vote-side-count {
+            color: var(--blue);
+            text-shadow: 0 0 30px rgba(91, 163, 236, 0.8);
+        }
+
+        .vote-side.girl .vote-side-count {
+            color: var(--pink);
+            text-shadow: 0 0 30px rgba(255, 107, 179, 0.8);
+        }
+
+        .vote-side-label {
+            font-size: 14px;
+            color: rgba(255,255,255,0.6);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .vote-vs {
+            font-size: 24px;
+            font-weight: 800;
+            color: rgba(255,255,255,0.3);
+            padding: 0 15px;
+            position: relative;
+        }
+
+        .vote-vs::before {
+            content: '⚡';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 30px;
+            animation: vsPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes vsPulse {
+            0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+        }
+
+        /* Progress bar battle */
+        .battle-bar-container {
+            height: 60px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 30px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 4px 15px rgba(0,0,0,0.5);
+            margin-bottom: 20px;
+        }
+
+        .battle-bar {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            font-size: 22px;
+            font-weight: 800;
+            color: white;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+            overflow: hidden;
+        }
+
+        .battle-bar.boy {
+            left: 0;
+            background: linear-gradient(90deg, var(--blue-dark) 0%, var(--blue) 100%);
+            justify-content: flex-end;
+            padding-right: 15px;
+        }
+
+        .battle-bar.girl {
+            right: 0;
+            background: linear-gradient(90deg, var(--pink) 0%, var(--pink-dark) 100%);
+            justify-content: flex-start;
+            padding-left: 15px;
+        }
+
+        .battle-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.2), transparent);
+        }
+
+        .battle-bar.boy::before {
+            content: '';
+            position: absolute;
+            right: -20px;
+            top: 0;
+            height: 100%;
+            width: 40px;
+            background: linear-gradient(90deg, transparent, var(--blue), transparent);
+            animation: barGlow 2s ease-in-out infinite;
+        }
+
+        .battle-bar.girl::before {
+            content: '';
+            position: absolute;
+            left: -20px;
+            top: 0;
+            height: 100%;
+            width: 40px;
+            background: linear-gradient(90deg, transparent, var(--pink), transparent);
+            animation: barGlow 2s ease-in-out infinite;
+            animation-delay: 1s;
+        }
+
+        @keyframes barGlow {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+
+        .battle-divider {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 6px;
+            height: 80%;
+            background: white;
+            border-radius: 3px;
+            z-index: 10;
+            box-shadow: 0 0 15px rgba(255,255,255,0.8);
+            transition: left 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .total-votes {
+            color: rgba(255,255,255,0.8);
+            font-size: 20px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .total-votes span {
+            color: white;
+            font-weight: 800;
+            font-size: 28px;
+            background: linear-gradient(135deg, var(--blue), var(--pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .live-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,0,0,0.2);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #ff6b6b;
+            margin-left: 10px;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: #ff6b6b;
+            border-radius: 50%;
+            animation: livePulse 1s ease-in-out infinite;
+        }
+
+        @keyframes livePulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+        }
+
+        /* Confetti effect on vote */
+        .confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+            overflow: hidden;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            opacity: 0;
+        }
+
+        @keyframes confettiFall {
+            0% {
+                opacity: 1;
+                transform: translateY(-100px) rotate(0deg);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(100vh) rotate(720deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Background layers -->
+    <div class="bg-gradient"></div>
+
+
+    <div class="orbs">
+        <div class="orb blue"></div>
+        <div class="orb pink"></div>
+        <div class="orb small"></div>
+    </div>
+
+
+    <div class="confetti-container" id="confetti"></div>
+
+    <!-- Main content -->
+    <div class="vote-container">
+        <!-- Voting Section (shown before voting) -->
+        <div class="baby-icon" id="babyIcon">👶</div>
+        <div class="vote-question" id="voteQuestion">猜猜寶寶性別！</div>
+        <div class="vote-subtitle" id="voteSubtitle">Guess the Gender & See Live Results</div>
+
+        <div class="vote-buttons" id="voteButtons">
+            <button class="vote-btn boy" onclick="castVote('boy')">
+                <span class="icon">👦🏻</span>
+                男仔 Boy
+            </button>
+            <button class="vote-btn girl" onclick="castVote('girl')">
+                <span class="icon">👧🏻</span>
+                女仔 Girl
+            </button>
+        </div>
+
+
+        <div class="results-card" id="resultsCard">
+            <div class="results-title">即時結果 Live Results</div>
+
+            <!-- Vote Battle Display -->
+            <div class="vote-battle">
+                <div class="vote-side boy" id="boySide">
+                    <span class="vote-side-icon">👦🏻</span>
+                    <span class="vote-side-count" id="boyCount">0</span>
+                    <span class="vote-side-label">男仔 Boy</span>
+                </div>
+                <div class="vote-vs"></div>
+                <div class="vote-side girl" id="girlSide">
+                    <span class="vote-side-icon">👧🏻</span>
+                    <span class="vote-side-count" id="girlCount">0</span>
+                    <span class="vote-side-label">女仔 Girl</span>
+                </div>
+            </div>
+
+            <!-- Battle Progress Bar -->
+            <div class="battle-bar-container">
+                <div class="battle-bar boy" id="boyBar" style="width: 50%;"></div>
+                <div class="battle-bar girl" id="girlBar" style="width: 50%;"></div>
+                <div class="battle-divider" id="battleDivider"></div>
+            </div>
+
+            <div class="total-votes">
+                <span id="totalVotes">0</span> 票 votes
+                <div class="live-indicator">
+                    <div class="live-dot"></div>
+                    LIVE
+                </div>
+            </div>
+
+            <!-- Win/Lose Reveal (hidden until revealed) -->
+            <div class="reveal-result" id="revealResult" style="display: none;">
+                <span class="reveal-icon" id="revealIcon"></span>
+                <div class="reveal-text" id="revealText"></div>
+                <div class="reveal-subtext" id="revealSubtext"></div>
+                <div class="reveal-answer">👦🏻 係男仔！It's a Boy!</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <script>
+        // Confetti effect
+        function createConfetti(color) {
+            const container = document.getElementById('confetti');
+            const colors = color === 'boy'
+                ? ['#5BA3EC', '#3D7DC9', '#2E5FA3', '#87CEEB', '#ADD8E6']
+                : ['#FF6BB3', '#E91E8C', '#B8157A', '#FFB6C1', '#FF69B4'];
+
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                confetti.style.width = (5 + Math.random() * 10) + 'px';
+                confetti.style.height = (5 + Math.random() * 10) + 'px';
+                confetti.style.animation = `confettiFall ${2 + Math.random() * 2}s ease-out forwards`;
+                confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                container.appendChild(confetti);
+
+                setTimeout(() => confetti.remove(), 4000);
+            }
+        }
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyD8Hb1xk3b3OblKxpoYWp7EGS3UY5Ppoxg",
+            authDomain: "wedding-4c258.firebaseapp.com",
+            projectId: "wedding-4c258",
+            storageBucket: "wedding-4c258.firebasestorage.app",
+            messagingSenderId: "135234203012",
+            appId: "1:135234203012:web:a10b04f87c5ad4f31b41d1",
+            measurementId: "G-T38F6H0CGX"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const votesRef = db.collection('votes').doc('genderPoll');
+
+        // Check if user already voted
+        let hasVoted = localStorage.getItem('wedding_vote');
+
+        // The actual answer is BOY
+        const actualAnswer = 'boy';
+
+        // Listen for reveal flag
+        const revealRef = db.collection('votes').doc('reveal');
+        revealRef.onSnapshot((doc) => {
+            if (doc.exists && doc.data().revealed === true) {
+                showRevealResult();
+            }
+        });
+
+        // Show win/lose result
+        function showRevealResult() {
+            if (!hasVoted) return;
+
+            // Hide live results
+            document.querySelector('.results-title').style.display = 'none';
+            document.querySelector('.vote-battle').style.display = 'none';
+            document.querySelector('.battle-bar-container').style.display = 'none';
+            document.querySelector('.total-votes').style.display = 'none';
+
+            const revealResult = document.getElementById('revealResult');
+            const revealIcon = document.getElementById('revealIcon');
+            const revealText = document.getElementById('revealText');
+            const revealSubtext = document.getElementById('revealSubtext');
+
+            const userWon = hasVoted === actualAnswer;
+
+            if (userWon) {
+                revealIcon.textContent = '🎉';
+                revealText.textContent = '恭喜！你猜中了！';
+                revealText.className = 'reveal-text win';
+                revealSubtext.textContent = 'Congratulations! You guessed right!';
+                createConfetti('boy');
+            } else {
+                revealIcon.textContent = '😅';
+                revealText.textContent = '差啲啦！';
+                revealText.className = 'reveal-text lose';
+                revealSubtext.textContent = 'Better luck next time!';
+            }
+
+            revealResult.style.display = 'block';
+        }
+
+        // Default selection for this page: GIRL
+        const defaultChoice = 'girl';
+
+        // Show results only view
+        function showResultsOnly(votedFor) {
+            // Hide voting elements
+            document.getElementById('babyIcon').style.display = 'none';
+            document.getElementById('voteQuestion').style.display = 'none';
+            document.getElementById('voteSubtitle').style.display = 'none';
+            document.getElementById('voteButtons').style.display = 'none';
+
+            // Show results card
+            document.getElementById('resultsCard').style.display = 'block';
+        }
+
+        // Apply default selection on load
+        function applyDefaultSelection() {
+            const boyBtn = document.querySelector('.vote-btn.boy');
+            const girlBtn = document.querySelector('.vote-btn.girl');
+            girlBtn.classList.add('selected');
+            boyBtn.classList.add('not-selected');
+        }
+
+        // Update UI if already voted
+        if (hasVoted) {
+            showResultsOnly(hasVoted);
+        } else {
+            // Hide results card until voted
+            document.getElementById('resultsCard').style.display = 'none';
+            // Apply default selection after short delay
+            setTimeout(applyDefaultSelection, 800);
+        }
+
+        // Cast vote function
+        async function castVote(gender) {
+            if (hasVoted) return;
+
+            const buttons = document.querySelectorAll('.vote-btn');
+            buttons.forEach(btn => btn.disabled = true);
+
+            // Update UI immediately
+            buttons.forEach(btn => {
+                btn.classList.remove('selected', 'not-selected');
+                if (btn.classList.contains(gender)) {
+                    btn.classList.add('selected');
+                } else {
+                    btn.classList.add('not-selected');
+                }
+            });
+
+            // Trigger confetti
+            createConfetti(gender);
+
+            try {
+                await db.runTransaction(async (transaction) => {
+                    const doc = await transaction.get(votesRef);
+                    if (!doc.exists) {
+                        transaction.set(votesRef, { boy: 0, girl: 0 });
+                    }
+                    const newCount = (doc.data()?.[gender] || 0) + 1;
+                    transaction.update(votesRef, { [gender]: newCount });
+                });
+
+                localStorage.setItem('wedding_vote', gender);
+                hasVoted = gender;
+
+                // Show results immediately
+                document.getElementById('resultsCard').style.display = 'block';
+                showResultsOnly(gender);
+
+            } catch (error) {
+                console.error('Vote failed:', error);
+                buttons.forEach(btn => {
+                    btn.disabled = false;
+                    btn.classList.remove('selected', 'not-selected');
+                });
+                applyDefaultSelection();
+            }
+        }
+
+        // Secret key to clear cache (press ~ to reset)
+        document.addEventListener('keydown', (e) => {
+            if (e.key === '~' || e.key === '`') {
+                localStorage.removeItem('wedding_vote');
+                alert('Cache cleared! Reloading...');
+                location.reload();
+            }
+        });
+
+        // Real-time listener for vote updates
+        votesRef.onSnapshot((doc) => {
+            if (doc.exists) {
+                const data = doc.data();
+                const boyVotes = data.boy || 0;
+                const girlVotes = data.girl || 0;
+                const total = boyVotes + girlVotes;
+
+                // Update counts
+                document.getElementById('boyCount').textContent = boyVotes;
+                document.getElementById('girlCount').textContent = girlVotes;
+                document.getElementById('totalVotes').textContent = total;
+
+                // Update battle bars and divider
+                if (total > 0) {
+                    const boyPercent = Math.round((boyVotes / total) * 100);
+                    const girlPercent = 100 - boyPercent;
+
+                    document.getElementById('boyBar').style.width = `${boyPercent}%`;
+                    document.getElementById('girlBar').style.width = `${girlPercent}%`;
+
+                    // Move the divider to show battle position
+                    document.getElementById('battleDivider').style.left = `${boyPercent}%`;
+
+                    // Highlight winning side
+                    const boySide = document.getElementById('boySide');
+                    const girlSide = document.getElementById('girlSide');
+                    const voteContainer = document.querySelector('.vote-container');
+
+                    boySide.classList.remove('winning');
+                    girlSide.classList.remove('winning');
+                    voteContainer.classList.remove('boy-winning', 'girl-winning', 'tie');
+
+                    if (boyVotes > girlVotes) {
+                        boySide.classList.add('winning');
+                        voteContainer.classList.add('boy-winning');
+                    } else if (girlVotes > boyVotes) {
+                        girlSide.classList.add('winning');
+                        voteContainer.classList.add('girl-winning');
+                    } else {
+                        voteContainer.classList.add('tie');
+                    }
+                }
+            }
+        }, (error) => {
+            console.error('Realtime update error:', error);
+        });
+    </script>
+</body>
+
+</html>
