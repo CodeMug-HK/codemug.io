@@ -411,28 +411,31 @@
                 const colors = this.goldenOverride ? goldenColors : (this.type === 'boy' ? blueColors : pinkColors);
                 const explosionType = Math.floor(Math.random() * 11);
 
+                // Reduce particle counts on mobile
+                const m = isMobile ? 0.4 : 1;
+
                 if (explosionType === 0) {
-                    this.createPeony(colors, 150);
+                    this.createPeony(colors, Math.floor(150 * m));
                 } else if (explosionType === 1) {
-                    this.createChrysanthemum(colors, 180);
+                    this.createChrysanthemum(colors, Math.floor(180 * m));
                 } else if (explosionType === 2) {
-                    this.createWillow(colors, 120);
+                    this.createWillow(colors, Math.floor(120 * m));
                 } else if (explosionType === 3) {
-                    this.createRing(colors, 100);
+                    this.createRing(colors, Math.floor(100 * m));
                 } else if (explosionType === 4) {
-                    this.createCrossette(colors, 80);
+                    this.createCrossette(colors, Math.floor(80 * m));
                 } else if (explosionType === 5) {
-                    this.createPalm(colors, 100);
+                    this.createPalm(colors, Math.floor(100 * m));
                 } else if (explosionType === 6) {
-                    this.createDahlia(colors, 200);
+                    this.createDahlia(colors, Math.floor(200 * m));
                 } else if (explosionType === 7) {
-                    this.createSpiral(colors, 120);
+                    this.createSpiral(colors, Math.floor(120 * m));
                 } else if (explosionType === 8) {
-                    this.createKamuro(colors, 150);
+                    this.createKamuro(colors, Math.floor(150 * m));
                 } else if (explosionType === 9) {
-                    this.createHeart(colors, 80);
+                    this.createHeart(colors, Math.floor(80 * m));
                 } else {
-                    this.createStar(colors, 100);
+                    this.createStar(colors, Math.floor(100 * m));
                 }
             }
 
