@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Reveal Control</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(180deg, #0a0a1a 0%, #1a1a3e 50%, #0a0a1a 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        .admin-container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            min-width: 350px;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 30px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* Login form styles */
+        .login-container {
+            display: block;
+        }
+
+        .login-container.hidden,
+        .admin-container.hidden {
+            display: none;
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .login-form input {
+            padding: 15px 20px;
+            font-size: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .login-form input:focus {
+            border-color: rgba(91, 163, 236, 0.5);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .login-form input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .btn-login {
+            background: linear-gradient(135deg, #5BA3EC 0%, #3D7DC9 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(91, 163, 236, 0.3);
+        }
+
+        .btn-login:hover {
+            box-shadow: 0 6px 20px rgba(91, 163, 236, 0.4);
+        }
+
+        .login-error {
+            color: #f87171;
+            font-size: 14px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .login-error.show {
+            display: block;
+        }
+
+        .user-info {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 20px;
+        }
+
+        .btn-logout {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            padding: 8px 16px;
+            margin-bottom: 20px;
+        }
+
+        .btn-logout:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .status {
+            font-size: 18px;
+            margin-bottom: 30px;
+            padding: 15px 25px;
+            border-radius: 12px;
+            display: inline-block;
+        }
+
+        .status.revealed {
+            background: rgba(74, 222, 128, 0.2);
+            color: #4ade80;
+            border: 1px solid rgba(74, 222, 128, 0.3);
+        }
+
+        .status.hidden {
+            background: rgba(248, 113, 113, 0.2);
+            color: #f87171;
+            border: 1px solid rgba(248, 113, 113, 0.3);
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .btn-reveal {
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(74, 222, 128, 0.3);
+        }
+
+        .btn-reveal:hover {
+            box-shadow: 0 6px 20px rgba(74, 222, 128, 0.4);
+        }
+
+        .btn-hide {
+            background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(248, 113, 113, 0.3);
+        }
+
+        .btn-hide:hover {
+            box-shadow: 0 6px 20px rgba(248, 113, 113, 0.4);
+        }
+
+        .btn-reset {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(251, 191, 36, 0.3);
+        }
+
+        .btn-reset:hover {
+            box-shadow: 0 6px 20px rgba(251, 191, 36, 0.4);
+        }
+
+        .vote-stats {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+        }
+
+        .vote-stats h3 {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 15px;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-around;
+            gap: 20px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: 800;
+        }
+
+        .stat-value.boy {
+            color: #5BA3EC;
+        }
+
+        .stat-value.girl {
+            color: #FF6BB3;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Login Form -->
+    <div class="admin-container login-container" id="loginContainer">
+        <h1>🔐 Admin Login</h1>
+        <form class="login-form" onsubmit="login(event)">
+            <input type="email" id="email" placeholder="Email" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <button type="submit" class="btn-login">Login</button>
+        </form>
+        <div class="login-error" id="loginError"></div>
+    </div>
+
+    <!-- Admin Panel (hidden until logged in) -->
+    <div class="admin-container hidden" id="adminPanel">
+        <h1>🎮 Reveal Control</h1>
+
+        <div class="user-info" id="userInfo"></div>
+        <button class="btn-logout" onclick="logout()">Logout</button>
+
+        <div class="status hidden" id="status">
+            Loading...
+        </div>
+
+        <div class="buttons">
+            <button class="btn-reveal" onclick="setReveal(true)">
+                🎉 Reveal!
+            </button>
+            <button class="btn-hide" onclick="setReveal(false)">
+                🙈 Hide
+            </button>
+        </div>
+
+        <button class="btn-reset" onclick="resetVotes()">
+            🔄 Reset All Votes
+        </button>
+
+        <div class="vote-stats">
+            <h3>Current Votes</h3>
+            <div class="stats-row">
+                <div class="stat">
+                    <div class="stat-value boy" id="boyVotes">0</div>
+                    <div class="stat-label">👦🏻 Boy</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value girl" id="girlVotes">0</div>
+                    <div class="stat-label">👧🏻 Girl</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyD8Hb1xk3b3OblKxpoYWp7EGS3UY5Ppoxg",
+            authDomain: "wedding-4c258.firebaseapp.com",
+            projectId: "wedding-4c258",
+            storageBucket: "wedding-4c258.firebasestorage.app",
+            messagingSenderId: "135234203012",
+            appId: "1:135234203012:web:a10b04f87c5ad4f31b41d1",
+            measurementId: "G-T38F6H0CGX"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        const revealRef = db.collection('votes').doc('reveal');
+        const votesRef = db.collection('votes').doc('genderPoll');
+
+        // Auth state listener
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                // User is signed in
+                document.getElementById('loginContainer').classList.add('hidden');
+                document.getElementById('adminPanel').classList.remove('hidden');
+                document.getElementById('userInfo').textContent = `Logged in as: ${user.email}`;
+                initAdminListeners();
+            } else {
+                // User is signed out
+                document.getElementById('loginContainer').classList.remove('hidden');
+                document.getElementById('adminPanel').classList.add('hidden');
+            }
+        });
+
+        // Login function
+        async function login(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorEl = document.getElementById('loginError');
+
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+                errorEl.classList.remove('show');
+            } catch (error) {
+                errorEl.textContent = error.message;
+                errorEl.classList.add('show');
+            }
+        }
+
+        // Logout function
+        async function logout() {
+            try {
+                await auth.signOut();
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+        }
+
+        // Initialize admin listeners (only after login)
+        function initAdminListeners() {
+            // Listen for reveal status
+            revealRef.onSnapshot((doc) => {
+                const statusEl = document.getElementById('status');
+                if (doc.exists && doc.data().revealed === true) {
+                    statusEl.textContent = '✅ REVEALED';
+                    statusEl.className = 'status revealed';
+                } else {
+                    statusEl.textContent = '🔒 HIDDEN';
+                    statusEl.className = 'status hidden';
+                }
+            });
+
+            // Listen for vote counts
+            votesRef.onSnapshot((doc) => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    document.getElementById('boyVotes').textContent = data.boy || 0;
+                    document.getElementById('girlVotes').textContent = data.girl || 0;
+                }
+            });
+        }
+
+        // Set reveal status
+        async function setReveal(revealed) {
+            try {
+                await revealRef.set({ revealed: revealed });
+                alert(revealed ? '🎉 Revealed!' : '🙈 Hidden!');
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error: ' + error.message);
+            }
+        }
+
+        // Reset all votes
+        async function resetVotes() {
+            if (!confirm('⚠️ Are you sure you want to reset ALL votes to 0?')) {
+                return;
+            }
+
+            try {
+                await votesRef.set({ boy: 0, girl: 0 });
+                await revealRef.set({ revealed: false });
+                alert('✅ All votes reset to 0 and reveal hidden!');
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error: ' + error.message);
+            }
+        }
+    </script>
+</body>
+
+</html>
