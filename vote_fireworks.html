@@ -863,7 +863,7 @@
             }
         });
 
-        // Listen for changes
+        // Listen for changes and fire fireworks when votes increase
         votesRef.onSnapshot((doc) => {
             if (doc.exists) {
                 const data = doc.data();
@@ -872,6 +872,17 @@
 
                 document.getElementById('boyCount').textContent = boyVotes;
                 document.getElementById('girlCount').textContent = girlVotes;
+
+                // Fire fireworks for new votes
+                const newBoy = boyVotes - currentBoyCount;
+                const newGirl = girlVotes - currentGirlCount;
+
+                for (let i = 0; i < newBoy; i++) {
+                    setTimeout(() => createFirework('boy'), i * 300);
+                }
+                for (let i = 0; i < newGirl; i++) {
+                    setTimeout(() => createFirework('girl'), i * 300);
+                }
 
                 currentBoyCount = boyVotes;
                 currentGirlCount = girlVotes;
@@ -894,10 +905,7 @@
             // Show ripple
             showTapRipple(x, y, type);
 
-            // Create firework at tap position
-            createFirework(type, x);
-
-            // Update Firebase
+            // Update Firebase (firework will be triggered by snapshot listener)
             try {
                 await votesRef.update({
                     [type]: firebase.firestore.FieldValue.increment(1)
