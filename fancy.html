@@ -67,10 +67,22 @@
 
         .score.boy .score-count {
             color: #5BA3EC;
+            text-shadow:
+                0 0 40px rgba(91, 163, 236, 1),
+                0 0 80px rgba(91, 163, 236, 0.8),
+                0 6px 12px rgba(0, 0, 0, 0.8),
+                0 3px 6px rgba(0, 0, 0, 0.6),
+                2px 2px 4px rgba(0, 0, 0, 0.9);
         }
 
         .score.girl .score-count {
             color: #FF6BB3;
+            text-shadow:
+                0 0 40px rgba(255, 107, 179, 1),
+                0 0 80px rgba(255, 107, 179, 0.8),
+                0 6px 12px rgba(0, 0, 0, 0.8),
+                0 3px 6px rgba(0, 0, 0, 0.6),
+                2px 2px 4px rgba(0, 0, 0, 0.9);
         }
 
         .score-label {
@@ -198,7 +210,7 @@
 
         // Create engine with better settings
         const engine = Engine.create({
-            gravity: { x: 0, y: 1.2 }
+            gravity: { x: 0, y: -0.5 }  // Negative gravity - balloons float up!
         });
 
         // Custom rendering with canvas
@@ -214,9 +226,9 @@
         const topBarrier = 0;
         const bottomBarrier = 0;
 
-        // Floor
-        const floor = Bodies.rectangle(
-            width / 2, height - bottomBarrier / 2 + 25,
+        // Ceiling (balloons float up to here)
+        const ceiling = Bodies.rectangle(
+            width / 2, -wallThickness / 2,
             width, wallThickness,
             { isStatic: true, friction: 0.8, restitution: 0.3 }
         );
@@ -243,7 +255,7 @@
             { isStatic: true, friction: 0.3, restitution: 0.4 }
         );
 
-        Composite.add(engine.world, [floor, leftWall, rightWall, divider]);
+        Composite.add(engine.world, [ceiling, leftWall, rightWall, divider]);
 
         // Add mouse interaction
         const mouse = Mouse.create(canvas);
@@ -256,37 +268,59 @@
         });
         Composite.add(engine.world, mouseConstraint);
 
-        // Create a ball
+        // Blue color variations
+        const blueColors = [
+            { light: 'rgba(180, 220, 255, 0.95)', mid: 'rgba(91, 163, 236, 0.9)', dark: 'rgba(40, 90, 160, 0.95)' },
+            { light: 'rgba(200, 240, 255, 0.95)', mid: 'rgba(70, 180, 220, 0.9)', dark: 'rgba(30, 100, 140, 0.95)' },
+            { light: 'rgba(180, 200, 255, 0.95)', mid: 'rgba(100, 140, 220, 0.9)', dark: 'rgba(50, 70, 150, 0.95)' },
+            { light: 'rgba(220, 240, 255, 0.95)', mid: 'rgba(120, 190, 240, 0.9)', dark: 'rgba(60, 120, 180, 0.95)' },
+        ];
+
+        // Pink color variations
+        const pinkColors = [
+            { light: 'rgba(255, 200, 230, 0.95)', mid: 'rgba(255, 107, 179, 0.9)', dark: 'rgba(180, 40, 120, 0.95)' },
+            { light: 'rgba(255, 180, 210, 0.95)', mid: 'rgba(255, 130, 170, 0.9)', dark: 'rgba(200, 60, 130, 0.95)' },
+            { light: 'rgba(255, 210, 240, 0.95)', mid: 'rgba(240, 100, 180, 0.9)', dark: 'rgba(170, 50, 130, 0.95)' },
+        ];
+
+        // Create a balloon
         function createBall(type) {
-            const radius = 15 + Math.random() * 10;
+            const radius = 11 + Math.random() * 6;
             const centerX = width / 2;
 
             let x;
             if (type === 'boy') {
-                // Spawn boy balls on left side, away from center
+                // Spawn boy balloons on left side, away from center
                 x = 50 + Math.random() * (centerX - 100);
             } else {
-                // Spawn girl balls on right side, away from center
+                // Spawn girl balloons on right side, away from center
                 x = centerX + 50 + Math.random() * (centerX - 100);
             }
 
-            const ball = Bodies.circle(x, -50 - Math.random() * 100, radius, {
+            // Pick random color variation
+            const colorIndex = type === 'boy'
+                ? Math.floor(Math.random() * blueColors.length)
+                : Math.floor(Math.random() * pinkColors.length);
+
+            // Spawn from bottom of screen
+            const ball = Bodies.circle(x, height + 50 + Math.random() * 100, radius, {
                 restitution: 0.4,
                 friction: 0.1,
-                frictionAir: 0.005,
-                density: 0.002,
+                frictionAir: 0.01,  // More air friction for floaty feel
+                density: 0.0005,   // Light like a balloon
                 label: type,
+                colorIndex: colorIndex,
                 render: { fillStyle: type === 'boy' ? '#5BA3EC' : '#FF6BB3' }
             });
 
-            // Less horizontal velocity to prevent crossing
+            // Slight horizontal drift
             Body.setVelocity(ball, {
-                x: (Math.random() - 0.5) * 3,
-                y: Math.random() * 2
+                x: (Math.random() - 0.5) * 2,
+                y: -Math.random() * 3  // Initial upward push
             });
 
             // Add slight spin
-            Body.setAngularVelocity(ball, (Math.random() - 0.5) * 0.1);
+            Body.setAngularVelocity(ball, (Math.random() - 0.5) * 0.05);
 
             Composite.add(engine.world, ball);
             ballBodies.push(ball);
@@ -304,87 +338,81 @@
             ctx.fillRect(width / 2 - 15, 0, 30, height);
             ctx.restore();
 
-            // Draw balls
+            // Draw balloons
             ballBodies.forEach(ball => {
                 const pos = ball.position;
                 const radius = ball.circleRadius;
                 const type = ball.label;
+                const colorIdx = ball.colorIndex || 0;
+
+                // Get colors for this balloon
+                const colors = type === 'boy'
+                    ? blueColors[colorIdx % blueColors.length]
+                    : pinkColors[colorIdx % pinkColors.length];
 
                 ctx.save();
                 ctx.translate(pos.x, pos.y);
 
-                // Outer glow
-                ctx.shadowBlur = 25;
-                ctx.shadowColor = type === 'boy' ? 'rgba(91, 163, 236, 0.8)' : 'rgba(255, 107, 179, 0.8)';
-
-                // Main ball - glass/bubble effect
-                const ballGradient = ctx.createRadialGradient(
-                    -radius * 0.4, -radius * 0.4, 0,
-                    0, 0, radius * 1.1
-                );
-                if (type === 'boy') {
-                    ballGradient.addColorStop(0, 'rgba(200, 230, 255, 0.95)');
-                    ballGradient.addColorStop(0.2, 'rgba(91, 163, 236, 0.9)');
-                    ballGradient.addColorStop(0.6, 'rgba(59, 130, 200, 0.85)');
-                    ballGradient.addColorStop(0.9, 'rgba(30, 80, 150, 0.9)');
-                    ballGradient.addColorStop(1, 'rgba(20, 60, 120, 0.95)');
-                } else {
-                    ballGradient.addColorStop(0, 'rgba(255, 220, 240, 0.95)');
-                    ballGradient.addColorStop(0.2, 'rgba(255, 107, 179, 0.9)');
-                    ballGradient.addColorStop(0.6, 'rgba(230, 60, 140, 0.85)');
-                    ballGradient.addColorStop(0.9, 'rgba(180, 30, 110, 0.9)');
-                    ballGradient.addColorStop(1, 'rgba(140, 20, 90, 0.95)');
-                }
-
-                ctx.fillStyle = ballGradient;
+                // Balloon string
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+                ctx.lineWidth = 1.5;
                 ctx.beginPath();
-                ctx.arc(0, 0, radius, 0, Math.PI * 2);
+                ctx.moveTo(0, radius);
+                ctx.quadraticCurveTo(radius * 0.3, radius * 2, 0, radius * 2.5);
+                ctx.stroke();
+
+                // Outer glow
+                ctx.shadowBlur = 30;
+                ctx.shadowColor = type === 'boy' ? 'rgba(91, 163, 236, 0.6)' : 'rgba(255, 107, 179, 0.6)';
+
+                // Balloon body - oval shape
+                const balloonHeight = radius * 1.2;
+                const balloonWidth = radius;
+
+                // Main balloon gradient with color variation
+                const balloonGradient = ctx.createRadialGradient(
+                    -balloonWidth * 0.3, -balloonHeight * 0.3, 0,
+                    0, 0, balloonHeight
+                );
+                balloonGradient.addColorStop(0, colors.light);
+                balloonGradient.addColorStop(0.4, colors.mid);
+                balloonGradient.addColorStop(1, colors.dark);
+
+                ctx.fillStyle = balloonGradient;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, balloonWidth, balloonHeight, 0, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Reset shadow for details
+                // Reset shadow
                 ctx.shadowBlur = 0;
+
+                // Balloon knot (small triangle at bottom)
+                ctx.fillStyle = colors.dark;
+                ctx.beginPath();
+                ctx.moveTo(-radius * 0.15, radius * 0.95);
+                ctx.lineTo(radius * 0.15, radius * 0.95);
+                ctx.lineTo(0, radius * 1.15);
+                ctx.closePath();
+                ctx.fill();
 
                 // Glass shine - top highlight
                 const shineGradient = ctx.createRadialGradient(
-                    -radius * 0.35, -radius * 0.35, 0,
-                    -radius * 0.35, -radius * 0.35, radius * 0.5
+                    -balloonWidth * 0.35, -balloonHeight * 0.4, 0,
+                    -balloonWidth * 0.35, -balloonHeight * 0.4, balloonWidth * 0.5
                 );
-                shineGradient.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
-                shineGradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.4)');
+                shineGradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+                shineGradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.3)');
                 shineGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
                 ctx.fillStyle = shineGradient;
                 ctx.beginPath();
-                ctx.arc(-radius * 0.35, -radius * 0.35, radius * 0.5, 0, Math.PI * 2);
+                ctx.ellipse(-balloonWidth * 0.25, -balloonHeight * 0.35, balloonWidth * 0.35, balloonHeight * 0.3, -0.3, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Small sparkle dot
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+                // Small sparkle
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
                 ctx.beginPath();
-                ctx.arc(-radius * 0.4, -radius * 0.45, radius * 0.12, 0, Math.PI * 2);
+                ctx.arc(-balloonWidth * 0.4, -balloonHeight * 0.5, radius * 0.1, 0, Math.PI * 2);
                 ctx.fill();
-
-                // Bottom reflection (subtle)
-                const bottomShine = ctx.createRadialGradient(
-                    radius * 0.2, radius * 0.4, 0,
-                    radius * 0.2, radius * 0.4, radius * 0.4
-                );
-                bottomShine.addColorStop(0, 'rgba(255, 255, 255, 0.2)');
-                bottomShine.addColorStop(1, 'rgba(255, 255, 255, 0)');
-                ctx.fillStyle = bottomShine;
-                ctx.beginPath();
-                ctx.arc(radius * 0.2, radius * 0.4, radius * 0.4, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Rim light
-                const rimGradient = ctx.createLinearGradient(-radius, 0, radius, 0);
-                rimGradient.addColorStop(0, 'rgba(255, 255, 255, 0.3)');
-                rimGradient.addColorStop(0.5, 'rgba(255, 255, 255, 0)');
-                rimGradient.addColorStop(1, 'rgba(255, 255, 255, 0.15)');
-                ctx.strokeStyle = rimGradient;
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.arc(0, 0, radius - 1, 0, Math.PI * 2);
-                ctx.stroke();
 
                 ctx.restore();
             });
@@ -512,25 +540,25 @@
                 Composite.remove(engine.world, divider);
             }, 800);
 
-            // Rain down LOTS of blue balls
+            // Float up LOTS of blue balloons from bottom
             setTimeout(() => {
                 for (let i = 0; i < 100; i++) {
                     setTimeout(() => {
                         const ball = Bodies.circle(
                             Math.random() * width,
-                            -50 - Math.random() * 200,
-                            15 + Math.random() * 15,
+                            height + 50 + Math.random() * 200,
+                            11 + Math.random() * 6,
                             {
-                                restitution: 0.5,
+                                restitution: 0.4,
                                 friction: 0.1,
-                                frictionAir: 0.005,
-                                density: 0.002,
+                                frictionAir: 0.01,
+                                density: 0.0005,
                                 label: 'boy'
                             }
                         );
                         Body.setVelocity(ball, {
-                            x: (Math.random() - 0.5) * 5,
-                            y: Math.random() * 5
+                            x: (Math.random() - 0.5) * 3,
+                            y: -Math.random() * 3
                         });
                         Composite.add(engine.world, ball);
                         ballBodies.push(ball);
@@ -645,25 +673,29 @@
             `;
             document.head.appendChild(style);
 
-            // Continuous blue ball rain
+            // Continuous blue balloons floating up
             setInterval(() => {
                 if (ballBodies.length < 500) {
                     const ball = Bodies.circle(
                         Math.random() * width,
-                        -50,
-                        12 + Math.random() * 12,
+                        height + 50,
+                        11 + Math.random() * 6,
                         {
-                            restitution: 0.5,
+                            restitution: 0.4,
                             friction: 0.1,
-                            frictionAir: 0.005,
-                            density: 0.002,
+                            frictionAir: 0.01,
+                            density: 0.0005,
                             label: 'boy'
                         }
                     );
+                    Body.setVelocity(ball, {
+                        x: (Math.random() - 0.5) * 2,
+                        y: -Math.random() * 2
+                    });
                     Composite.add(engine.world, ball);
                     ballBodies.push(ball);
                 }
-            }, 100);
+            }, 150);
         }
     </script>
 </body>
