@@ -208,6 +208,16 @@
             }
         }
 
+        .her-image {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            z-index: 15;
+            pointer-events: none;
+            width: 20vw;
+            opacity: 0.35;
+        }
+
         /* Tap ripple effect */
         .tap-ripple {
             position: fixed;
@@ -244,6 +254,7 @@
 </head>
 
 <body>
+    <img src="her.png" alt="" class="her-image">
     <canvas id="canvas"></canvas>
 
     <!-- Tap zones -->
