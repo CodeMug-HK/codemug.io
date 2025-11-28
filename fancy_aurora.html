@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Live Vote Results - Aurora</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: linear-gradient(180deg, #020111 0%, #0a0a1a 30%, #1a1a3e 60%, #0a0a1a 100%);
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .score-board {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 60px;
+            z-index: 20;
+        }
+
+        .score {
+            text-align: center;
+            min-width: 120px;
+        }
+
+        .score-icon {
+            font-size: 50px;
+            display: block;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 0 20px currentColor);
+        }
+
+        .score-count {
+            font-size: 72px;
+            font-weight: 800;
+            display: block;
+            line-height: 1;
+            text-shadow: 0 0 30px currentColor;
+        }
+
+        .score.boy .score-count {
+            color: #5BA3EC;
+            text-shadow:
+                0 0 40px rgba(91, 163, 236, 1),
+                0 0 80px rgba(91, 163, 236, 0.8),
+                0 6px 12px rgba(0, 0, 0, 0.8),
+                0 3px 6px rgba(0, 0, 0, 0.6),
+                2px 2px 4px rgba(0, 0, 0, 0.9);
+        }
+
+        .score.girl .score-count {
+            color: #FF6BB3;
+            text-shadow:
+                0 0 40px rgba(255, 107, 179, 1),
+                0 0 80px rgba(255, 107, 179, 0.8),
+                0 6px 12px rgba(0, 0, 0, 0.8),
+                0 3px 6px rgba(0, 0, 0, 0.6),
+                2px 2px 4px rgba(0, 0, 0, 0.9);
+        }
+
+        .score-label {
+            font-size: 18px;
+            color: rgba(255,255,255,0.6);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 5px;
+        }
+
+        .vs-text {
+            font-size: 36px;
+            font-weight: 800;
+            color: rgba(255,255,255,0.3);
+            align-self: center;
+        }
+
+        .side-label {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 120px;
+            opacity: 0.08;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .side-label.boy {
+            left: 8%;
+        }
+
+        .side-label.girl {
+            right: 8%;
+        }
+
+        .her-image {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            z-index: 15;
+            pointer-events: none;
+            max-height: 40vh;
+        }
+    </style>
+</head>
+
+<body>
+    <img src="her.png" alt="" class="her-image">
+    <canvas id="canvas"></canvas>
+
+    <div class="overlay">
+        <div class="score-board">
+            <div class="score boy">
+                <span class="score-icon">👦🏻</span>
+                <span class="score-count" id="boyCount">0</span>
+                <span class="score-label">男仔 Boy</span>
+            </div>
+            <div class="vs-text">VS</div>
+            <div class="score girl">
+                <span class="score-icon">👧🏻</span>
+                <span class="score-count" id="girlCount">0</span>
+                <span class="score-label">女仔 Girl</span>
+            </div>
+        </div>
+
+        <div class="side-label boy">👦🏻</div>
+        <div class="side-label girl">👧🏻</div>
+
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width = window.innerWidth;
+        const height = canvas.height = window.innerHeight;
+
+        // Tracking
+        let currentBoyCount = 0;
+        let currentGirlCount = 0;
+        let boyIntensity = 0;
+        let girlIntensity = 0;
+        let targetBoyIntensity = 0;
+        let targetGirlIntensity = 0;
+
+        // Aurora wave parameters
+        const waves = [];
+        const numWaves = 8;
+        const centerX = width / 2;
+
+        // Initialize waves
+        for (let i = 0; i < numWaves; i++) {
+            waves.push({
+                offset: Math.random() * Math.PI * 2,
+                speed: 0.3 + Math.random() * 0.4,
+                amplitude: 20 + Math.random() * 40,
+                frequency: 0.002 + Math.random() * 0.003,
+                heightOffset: i * (height * 0.06),
+                thickness: 60 + Math.random() * 80
+            });
+        }
+
+        // Particles floating in aurora
+        const particles = [];
+        const maxParticles = 100;
+
+        class AuroraParticle {
+            constructor(side) {
+                this.side = side;
+                this.reset();
+            }
+
+            reset() {
+                if (this.side === 'boy') {
+                    this.x = Math.random() * (centerX - 50);
+                } else {
+                    this.x = centerX + 50 + Math.random() * (centerX - 50);
+                }
+                this.y = Math.random() * height * 0.7;
+                this.size = 1 + Math.random() * 2;
+                this.speedX = (Math.random() - 0.5) * 0.5;
+                this.speedY = -0.2 - Math.random() * 0.5;
+                this.alpha = 0.3 + Math.random() * 0.7;
+                this.twinkle = Math.random() * Math.PI * 2;
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.twinkle += 0.05;
+
+                if (this.y < 0 || this.x < 0 || this.x > width) {
+                    this.reset();
+                    this.y = height * 0.7;
+                }
+            }
+
+            draw() {
+                const intensity = this.side === 'boy' ? boyIntensity : girlIntensity;
+                if (intensity < 0.1) return;
+
+                const twinkleAlpha = this.alpha * (0.5 + Math.sin(this.twinkle) * 0.5) * intensity;
+                const color = this.side === 'boy'
+                    ? `rgba(91, 163, 236, ${twinkleAlpha})`
+                    : `rgba(255, 107, 179, ${twinkleAlpha})`;
+
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = color;
+                ctx.fill();
+            }
+        }
+
+        // Initialize particles
+        for (let i = 0; i < maxParticles / 2; i++) {
+            particles.push(new AuroraParticle('boy'));
+            particles.push(new AuroraParticle('girl'));
+        }
+
+        // Background stars
+        const stars = [];
+        for (let i = 0; i < 200; i++) {
+            stars.push({
+                x: Math.random() * width,
+                y: Math.random() * height,
+                size: 0.5 + Math.random() * 1.5,
+                twinkle: Math.random() * Math.PI * 2,
+                speed: 1 + Math.random() * 2
+            });
+        }
+
+        // Time
+        let time = 0;
+
+        // Draw aurora wave
+        function drawAuroraWave(wave, side, intensity) {
+            if (intensity < 0.01) return;
+
+            const baseX = side === 'boy' ? 0 : centerX;
+            const auroraWidth = centerX;
+
+            // Create gradient for this wave
+            const gradient = ctx.createLinearGradient(0, wave.heightOffset, 0, wave.heightOffset + wave.thickness * 2);
+
+            if (side === 'boy') {
+                gradient.addColorStop(0, `rgba(30, 80, 180, 0)`);
+                gradient.addColorStop(0.3, `rgba(50, 120, 220, ${0.15 * intensity})`);
+                gradient.addColorStop(0.5, `rgba(91, 163, 236, ${0.25 * intensity})`);
+                gradient.addColorStop(0.7, `rgba(100, 200, 255, ${0.2 * intensity})`);
+                gradient.addColorStop(1, `rgba(150, 230, 255, 0)`);
+            } else {
+                gradient.addColorStop(0, `rgba(180, 30, 100, 0)`);
+                gradient.addColorStop(0.3, `rgba(220, 50, 130, ${0.15 * intensity})`);
+                gradient.addColorStop(0.5, `rgba(255, 107, 179, ${0.25 * intensity})`);
+                gradient.addColorStop(0.7, `rgba(255, 150, 200, ${0.2 * intensity})`);
+                gradient.addColorStop(1, `rgba(255, 200, 230, 0)`);
+            }
+
+            ctx.beginPath();
+            ctx.moveTo(baseX, height);
+
+            // Draw wavy top edge
+            for (let x = 0; x <= auroraWidth; x += 5) {
+                const worldX = baseX + x;
+                const waveY = wave.heightOffset +
+                    Math.sin(x * wave.frequency + time * wave.speed + wave.offset) * wave.amplitude +
+                    Math.sin(x * wave.frequency * 2 + time * wave.speed * 0.7) * wave.amplitude * 0.3;
+
+                ctx.lineTo(worldX, waveY);
+            }
+
+            // Close path at bottom
+            ctx.lineTo(baseX + auroraWidth, height);
+            ctx.closePath();
+
+            ctx.fillStyle = gradient;
+            ctx.fill();
+        }
+
+        // Draw vertical aurora rays
+        function drawAuroraRays(side, intensity) {
+            if (intensity < 0.1) return;
+
+            const baseX = side === 'boy' ? 0 : centerX;
+            const auroraWidth = centerX;
+            const numRays = 15;
+
+            for (let i = 0; i < numRays; i++) {
+                const rayX = baseX + (auroraWidth / numRays) * i + Math.sin(time * 0.5 + i) * 20;
+                const rayWidth = 3 + Math.sin(time * 2 + i * 0.5) * 2;
+                const rayAlpha = (0.05 + Math.sin(time * 1.5 + i * 0.7) * 0.03) * intensity;
+                const rayHeight = height * (0.4 + Math.sin(time * 0.8 + i) * 0.2);
+
+                const gradient = ctx.createLinearGradient(rayX, 0, rayX, rayHeight);
+
+                if (side === 'boy') {
+                    gradient.addColorStop(0, `rgba(91, 163, 236, ${rayAlpha})`);
+                    gradient.addColorStop(0.5, `rgba(100, 200, 255, ${rayAlpha * 0.7})`);
+                    gradient.addColorStop(1, `rgba(91, 163, 236, 0)`);
+                } else {
+                    gradient.addColorStop(0, `rgba(255, 107, 179, ${rayAlpha})`);
+                    gradient.addColorStop(0.5, `rgba(255, 150, 200, ${rayAlpha * 0.7})`);
+                    gradient.addColorStop(1, `rgba(255, 107, 179, 0)`);
+                }
+
+                ctx.fillStyle = gradient;
+                ctx.fillRect(rayX - rayWidth / 2, 0, rayWidth, rayHeight);
+            }
+        }
+
+        // Main render loop
+        function render() {
+            time += 0.016;
+
+            // Smooth intensity transitions
+            boyIntensity += (targetBoyIntensity - boyIntensity) * 0.02;
+            girlIntensity += (targetGirlIntensity - girlIntensity) * 0.02;
+
+            // Clear canvas
+            ctx.fillStyle = 'rgba(2, 1, 17, 1)';
+            ctx.fillRect(0, 0, width, height);
+
+            // Draw stars
+            stars.forEach(star => {
+                const twinkle = 0.3 + Math.sin(time * star.speed + star.twinkle) * 0.4;
+                ctx.fillStyle = `rgba(255, 255, 255, ${twinkle})`;
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Draw aurora waves (back to front)
+            for (let i = waves.length - 1; i >= 0; i--) {
+                drawAuroraWave(waves[i], 'boy', boyIntensity);
+                drawAuroraWave(waves[i], 'girl', girlIntensity);
+            }
+
+            // Draw vertical rays
+            drawAuroraRays('boy', boyIntensity);
+            drawAuroraRays('girl', girlIntensity);
+
+            // Draw center divider
+            ctx.save();
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = 'rgba(255, 255, 255, 0.3)';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.fillRect(width / 2 - 2, 0, 4, height);
+            ctx.restore();
+
+            // Update and draw particles
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            // Shimmer effect overlay
+            const shimmerGradient = ctx.createRadialGradient(
+                width / 4, height / 3, 0,
+                width / 4, height / 3, height
+            );
+            shimmerGradient.addColorStop(0, `rgba(91, 163, 236, ${0.03 * boyIntensity * (0.5 + Math.sin(time) * 0.5)})`);
+            shimmerGradient.addColorStop(1, 'rgba(91, 163, 236, 0)');
+            ctx.fillStyle = shimmerGradient;
+            ctx.fillRect(0, 0, centerX, height);
+
+            const shimmerGradient2 = ctx.createRadialGradient(
+                width * 0.75, height / 3, 0,
+                width * 0.75, height / 3, height
+            );
+            shimmerGradient2.addColorStop(0, `rgba(255, 107, 179, ${0.03 * girlIntensity * (0.5 + Math.sin(time + 1) * 0.5)})`);
+            shimmerGradient2.addColorStop(1, 'rgba(255, 107, 179, 0)');
+            ctx.fillStyle = shimmerGradient2;
+            ctx.fillRect(centerX, 0, centerX, height);
+
+            requestAnimationFrame(render);
+        }
+
+        render();
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            location.reload();
+        });
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyD8Hb1xk3b3OblKxpoYWp7EGS3UY5Ppoxg",
+            authDomain: "wedding-4c258.firebaseapp.com",
+            projectId: "wedding-4c258",
+            storageBucket: "wedding-4c258.firebasestorage.app",
+            messagingSenderId: "135234203012",
+            appId: "1:135234203012:web:a10b04f87c5ad4f31b41d1",
+            measurementId: "G-T38F6H0CGX"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const votesRef = db.collection('votes').doc('genderPoll');
+
+        // Calculate intensity based on votes
+        function updateIntensity(boyVotes, girlVotes) {
+            const maxVotes = 50;  // Full intensity at 50 votes
+            targetBoyIntensity = Math.min(boyVotes / maxVotes, 1);
+            targetGirlIntensity = Math.min(girlVotes / maxVotes, 1);
+
+            // Minimum visibility
+            if (boyVotes > 0) targetBoyIntensity = Math.max(targetBoyIntensity, 0.3);
+            if (girlVotes > 0) targetGirlIntensity = Math.max(targetGirlIntensity, 0.3);
+        }
+
+        // Real-time listener
+        votesRef.onSnapshot((doc) => {
+            if (doc.exists) {
+                const data = doc.data();
+                const boyVotes = data.boy || 0;
+                const girlVotes = data.girl || 0;
+
+                document.getElementById('boyCount').textContent = boyVotes;
+                document.getElementById('girlCount').textContent = girlVotes;
+
+                updateIntensity(boyVotes, girlVotes);
+
+                currentBoyCount = boyVotes;
+                currentGirlCount = girlVotes;
+            }
+        });
+
+        // Initialize
+        votesRef.get().then((doc) => {
+            if (doc.exists) {
+                const data = doc.data();
+                const boyVotes = data.boy || 0;
+                const girlVotes = data.girl || 0;
+
+                updateIntensity(boyVotes, girlVotes);
+
+                currentBoyCount = boyVotes;
+                currentGirlCount = girlVotes;
+            }
+        });
+
+        // Listen for reveal
+        let revealed = false;
+        const revealRef = db.collection('votes').doc('reveal');
+        revealRef.onSnapshot((doc) => {
+            if (doc.exists && doc.data().revealed === true && !revealed) {
+                revealed = true;
+                showBoyReveal();
+            }
+        });
+
+        // Boy reveal animation
+        function showBoyReveal() {
+            // Fade out pink aurora
+            targetGirlIntensity = 0;
+
+            // Boost blue aurora to maximum
+            setTimeout(() => {
+                targetBoyIntensity = 1.5;  // Extra bright
+            }, 500);
+
+            // Hide girl score
+            setTimeout(() => {
+                document.querySelector('.score.girl').style.transition = 'all 1s ease';
+                document.querySelector('.score.girl').style.opacity = '0';
+                document.querySelector('.score.girl').style.transform = 'scale(0)';
+                document.querySelector('.vs-text').style.transition = 'all 1s ease';
+                document.querySelector('.vs-text').style.opacity = '0';
+            }, 500);
+
+            // Add extra blue particles
+            for (let i = 0; i < 50; i++) {
+                const p = new AuroraParticle('boy');
+                p.x = Math.random() * width;  // Full width now
+                particles.push(p);
+            }
+
+            // Show reveal message
+            setTimeout(() => {
+                showRevealOverlay();
+            }, 1500);
+        }
+
+        function showRevealOverlay() {
+            const overlay = document.createElement('div');
+            overlay.innerHTML = `
+                <div class="reveal-overlay">
+                    <div class="reveal-content">
+                        <div class="reveal-emoji">👦🏻</div>
+                        <div class="reveal-title">係男仔！</div>
+                        <div class="reveal-subtitle">IT'S A BOY!</div>
+                        <div class="reveal-sparkles">🌌 ✨ 💙 ✨ 🌌</div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+
+            const style = document.createElement('style');
+            style.textContent = `
+                .reveal-overlay {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 9999;
+                    pointer-events: none;
+                    background: rgba(0, 0, 0, 0.5);
+                    animation: overlayFadeIn 1s ease forwards;
+                }
+                @keyframes overlayFadeIn {
+                    from { opacity: 0; background: rgba(0, 0, 0, 0); }
+                    to { opacity: 1; background: rgba(0, 0, 0, 0.5); }
+                }
+                .reveal-content {
+                    text-align: center;
+                    animation: revealBounce 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+                }
+                @keyframes revealBounce {
+                    0% { transform: scale(0) rotate(-10deg); opacity: 0; }
+                    50% { transform: scale(1.2) rotate(5deg); }
+                    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+                }
+                .reveal-emoji {
+                    font-size: 120px;
+                    animation: emojiFloat 2s ease-in-out infinite;
+                    filter: drop-shadow(0 0 30px rgba(91, 163, 236, 0.8));
+                }
+                @keyframes emojiFloat {
+                    0%, 100% { transform: translateY(0); }
+                    50% { transform: translateY(-20px); }
+                }
+                .reveal-title {
+                    font-size: 72px;
+                    font-weight: 900;
+                    color: #5BA3EC;
+                    text-shadow:
+                        0 0 20px rgba(91, 163, 236, 0.8),
+                        0 0 40px rgba(91, 163, 236, 0.6),
+                        0 0 60px rgba(91, 163, 236, 0.4),
+                        0 4px 0 #2E5FA3;
+                    margin: 20px 0;
+                    animation: titlePulse 1.5s ease-in-out infinite;
+                }
+                @keyframes titlePulse {
+                    0%, 100% {
+                        text-shadow:
+                            0 0 20px rgba(91, 163, 236, 0.8),
+                            0 0 40px rgba(91, 163, 236, 0.6),
+                            0 0 60px rgba(91, 163, 236, 0.4),
+                            0 4px 0 #2E5FA3;
+                    }
+                    50% {
+                        text-shadow:
+                            0 0 30px rgba(91, 163, 236, 1),
+                            0 0 60px rgba(91, 163, 236, 0.8),
+                            0 0 90px rgba(91, 163, 236, 0.6),
+                            0 4px 0 #2E5FA3;
+                    }
+                }
+                .reveal-subtitle {
+                    font-size: 48px;
+                    font-weight: 700;
+                    color: white;
+                    text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+                    letter-spacing: 8px;
+                }
+                .reveal-sparkles {
+                    font-size: 36px;
+                    margin-top: 20px;
+                    animation: sparkleRotate 3s linear infinite;
+                }
+                @keyframes sparkleRotate {
+                    0% { transform: rotate(-5deg); }
+                    50% { transform: rotate(5deg); }
+                    100% { transform: rotate(-5deg); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    </script>
+</body>
+
+</html>
