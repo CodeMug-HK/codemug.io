@@ -155,6 +155,14 @@
                 <button onclick="dash_auth('')">Clear</button>
             </div>
         </div>
+
+        <div class="demo-section">
+            <h2>Launch URL:</h2>
+            <div class="input-group">
+                <input type="text" id="url-input" placeholder="Enter URL (e.g., https://example.com)..." />
+                <button onclick="launchURL()">Launch</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -176,10 +184,37 @@
             input.value = '';
         }
 
+        function launchURL() {
+            const input = document.getElementById('url-input');
+            const url = input.value.trim();
+
+            if (url === '') {
+                alert('Please enter a URL');
+                return;
+            }
+
+            // Add https:// if no protocol is specified
+            let fullURL = url;
+            if (!url.match(/^https?:\/\//i)) {
+                fullURL = 'https://' + url;
+            }
+
+            // Open URL in new tab
+            window.open(fullURL, '_blank');
+            input.value = '';
+        }
+
         // Allow Enter key to submit
         document.getElementById('token-input').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 updateToken();
+            }
+        });
+
+        // Allow Enter key to launch URL
+        document.getElementById('url-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                launchURL();
             }
         });
     </script>
