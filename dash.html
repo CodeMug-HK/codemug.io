@@ -163,6 +163,18 @@
                 <button onclick="launchURL()">Launch</button>
             </div>
         </div>
+
+        <div class="demo-section">
+            <h2>In-App Navigation:</h2>
+            <div class="input-group">
+                <input type="text" id="route-input" placeholder="Enter route (e.g., /main/home/ride-hailing)..." />
+                <button onclick="navigateInApp(false)">Navigate</button>
+                <button onclick="navigateInApp(true)">Navigate & Close</button>
+            </div>
+            <div class="quick-buttons">
+                <button onclick="navigateToRoute('/main/home/ride-hailing', true)">Ride Hailing</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -202,6 +214,38 @@
             // Open URL in new tab
             window.open(fullURL, '_blank');
             input.value = '';
+        }
+
+        function navigateInApp(shouldClose) {
+            const input = document.getElementById('route-input');
+            const route = input.value.trim();
+
+            if (route === '') {
+                alert('Please enter a route');
+                return;
+            }
+
+            navigateToRoute(route, shouldClose);
+            input.value = '';
+        }
+
+        function navigateToRoute(route, pop) {
+            try {
+                // Check if flutter_inappwebview is available
+                if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
+                    window.flutter_inappwebview.callHandler('handleInAppDeeplink', {
+                        route: route,
+                        pop: pop
+                    });
+                    console.log(`Navigating to ${route}, pop: ${pop}`);
+                } else {
+                    alert('This feature is only available when running inside the app webview');
+                    console.error('flutter_inappwebview not available');
+                }
+            } catch (error) {
+                alert('Error navigating: ' + error.message);
+                console.error('Navigation error:', error);
+            }
         }
 
         // Allow Enter key to submit
