@@ -151,44 +151,6 @@
     </div>
 
     <script>
-        function dash_auth(token) {
-            const tokenElement = document.getElementById('token-value');
-
-            if (token && token.trim() !== '') {
-                tokenElement.textContent = token;
-                tokenElement.classList.remove('empty');
-            } else {
-                tokenElement.textContent = 'No token set';
-                tokenElement.classList.add('empty');
-            }
-        }
-
-        function updateToken() {
-            const input = document.getElementById('token-input');
-            dash_auth(input.value);
-            input.value = '';
-        }
-
-        function launchURL() {
-            const input = document.getElementById('url-input');
-            const url = input.value.trim();
-
-            if (url === '') {
-                alert('Please enter a URL');
-                return;
-            }
-
-            // Add https:// if no protocol is specified
-            let fullURL = url;
-            if (!url.match(/^https?:\/\//i)) {
-                fullURL = 'https://' + url;
-            }
-
-            // Open URL in new tab
-            window.open(fullURL, '_blank');
-            input.value = '';
-        }
-
         function navigateInApp(shouldClose) {
             const input = document.getElementById('route-input');
             const route = input.value.trim();
@@ -220,20 +182,6 @@
                 console.error('Navigation error:', error);
             }
         }
-
-        // Allow Enter key to submit
-        document.getElementById('token-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                updateToken();
-            }
-        });
-
-        // Allow Enter key to launch URL
-        document.getElementById('url-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                launchURL();
-            }
-        });
 
         // Allow Enter key to navigate in-app (default: don't close)
         document.getElementById('route-input').addEventListener('keypress', function(e) {
