@@ -261,6 +261,13 @@
                 launchURL();
             }
         });
+
+        // Allow Enter key to navigate in-app (default: don't close)
+        document.getElementById('route-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                navigateInApp(false);
+            }
+        });
     </script>
 </body>
 </html>
