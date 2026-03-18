@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solar Inverter Management Platform - CodeMug</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#FFFAF5;--white:#FFF;--brown-dark:#3E2723;--brown:#5D4037;--brown-light:#8D6E63;--brown-border:#E8DED5;--orange:#D84315;--amber:#FF8F00;--text:#2C1810;--text-mid:#5D4037;--text-light:#8D6E63;--shadow:rgba(62,39,35,0.08);--radius:16px}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;color:var(--text);background:var(--bg)}
+h1,h2,h3{font-family:'Playfair Display',serif}
+a{color:var(--orange);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.back-link{display:inline-flex;align-items:center;gap:0.5rem;padding:1.5rem 2rem;color:var(--brown-light);font-size:0.9rem;font-weight:500;transition:color 0.3s}
+.back-link:hover{color:var(--orange);text-decoration:none}
+.back-link svg{width:16px;height:16px}
+
+.project-hero{max-width:800px;margin:0 auto;padding:2rem 2rem 4rem}
+.project-hero-icon{width:80px;height:80px;border-radius:16px;object-fit:contain;background:var(--white);padding:8px;box-shadow:0 4px 20px var(--shadow);margin-bottom:1.5rem}
+.project-hero h1{font-size:2.4rem;color:var(--brown-dark);margin-bottom:1rem;line-height:1.2}
+.tags{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:2rem}
+.tag{font-size:0.75rem;padding:0.3rem 0.8rem;border-radius:50px;background:rgba(216,67,21,0.08);color:var(--orange);font-weight:500}
+.project-desc{font-size:1.1rem;line-height:1.8;color:var(--text-mid);margin-bottom:3rem}
+
+.section-title{font-size:1.4rem;color:var(--brown-dark);margin-bottom:1.2rem;padding-bottom:0.5rem;border-bottom:2px solid var(--brown-border)}
+.features{margin-bottom:3rem}
+.features ul{list-style:none;padding:0}
+.features li{padding:0.75rem 0;border-bottom:1px solid var(--brown-border);color:var(--text-mid);font-size:0.95rem;padding-left:1.5rem;position:relative}
+.features li::before{content:'';position:absolute;left:0;top:50%;width:6px;height:6px;border-radius:50%;background:var(--orange);transform:translateY(-50%)}
+
+.tech-stack{margin-bottom:3rem}
+.tech-pills{display:flex;flex-wrap:wrap;gap:0.6rem;margin-top:1rem}
+.tech-pill{padding:0.5rem 1.2rem;border-radius:50px;border:1px solid var(--brown-border);background:var(--white);color:var(--brown);font-size:0.85rem;font-weight:500}
+
+.category{display:inline-block;padding:0.4rem 1rem;border-radius:50px;background:var(--brown-dark);color:#fff;font-size:0.8rem;font-weight:500;margin-bottom:1.5rem}
+
+footer{max-width:800px;margin:0 auto;padding:2rem;text-align:center;font-size:0.8rem;color:var(--text-light);border-top:1px solid var(--brown-border)}
+
+@media(max-width:640px){
+  .project-hero h1{font-size:1.8rem}
+  .project-hero{padding:1.5rem 1.5rem 3rem}
+}
+</style>
+</head>
+<body>
+<a href="../index.html#work" class="back-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Back to All Projects</a>
+<div class="project-hero">
+  
+  <span class="category">IoT Solution</span>
+  <h1>Solar Inverter Management Platform</h1>
+  <div class="tags"><span class="tag">IoT</span><span class="tag">Mobile App</span><span class="tag">AWS</span><span class="tag">Flutter</span></div>
+  <p class="project-desc">Cross-platform mobile application enabling users to interact with their solar inverter systems in real-time. Built with Flutter for consistent UX across devices, integrated with AWS IoT for secure device communication, and featuring ESP provisioning for streamlined initial device configuration.</p>
+  <div class="features">
+    <h2 class="section-title">Key Highlights</h2>
+    <ul><li>Real-time monitoring of power output and system health</li><li>AWS IoT integration for secure device communication</li><li>Environmental impact metrics dashboard</li><li>ESP provisioning for initial device network setup</li><li>Cross-platform Flutter mobile application</li><li>Automated state updates and data streaming</li></ul>
+  </div>
+  <div class="tech-stack">
+    <h2 class="section-title">Tech Stack</h2>
+    <div class="tech-pills"><span class="tech-pill">Flutter</span><span class="tech-pill">Dart</span><span class="tech-pill">AWS IoT</span><span class="tech-pill">ESP32</span><span class="tech-pill">REST API</span><span class="tech-pill">Real-time Data</span></div>
+  </div>
+</div>
+<footer>&copy; 2026 CodeMug Limited · Hong Kong</footer>
+</body>
+</html>
