@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CodeMug — Editorial</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,800;0,9..144,900;1,9..144,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #F5F1E8;
+  --ink: #1A1A1A;
+  --ink-mid: #4A4A4A;
+  --ink-soft: #8A8580;
+  --rule: #1A1A1A;
+  --rule-soft: #D8D0C2;
+  --accent: #C2410C;
+  --accent-soft: #FED7AA;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  font-family:'Inter',sans-serif; background:var(--paper); color:var(--ink);
+  font-feature-settings:'ss01'; -webkit-font-smoothing:antialiased;
+  font-size:16px; line-height:1.6;
+}
+.fraunces { font-family:'Fraunces',serif; }
+.mono { font-family:'JetBrains Mono',monospace; font-size:0.78rem; letter-spacing:0.05em; }
+a { color:inherit; text-decoration:none; }
+
+/* MASTHEAD */
+.masthead {
+  position:sticky; top:0; z-index:100; background:var(--paper);
+  border-bottom:1px solid var(--rule); padding:1rem 3rem;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.masthead .brand { font-family:'Fraunces',serif; font-weight:700; font-size:1.4rem; letter-spacing:-0.02em; }
+.masthead .brand i { font-style:italic; font-weight:400; color:var(--accent); }
+.masthead nav { display:flex; gap:2.5rem; }
+.masthead nav a { font-size:0.82rem; text-transform:uppercase; letter-spacing:0.15em; color:var(--ink-mid); }
+.masthead nav a:hover { color:var(--accent); }
+.masthead .issue { font-family:'JetBrains Mono',monospace; font-size:0.72rem; color:var(--ink-soft); }
+
+/* CONTAINER */
+.col { max-width:1320px; margin:0 auto; padding:0 3rem; }
+
+/* HERO */
+.hero { padding:6rem 0 4rem; border-bottom:1px solid var(--rule); }
+.hero-top { display:flex; justify-content:space-between; padding-bottom:3rem; border-bottom:1px solid var(--rule-soft); margin-bottom:3rem; }
+.hero-top .mono { color:var(--ink-soft); }
+.hero-grid { display:grid; grid-template-columns:1fr 1fr; gap:5rem; align-items:end; }
+.hero h1 {
+  font-family:'Fraunces',serif; font-weight:300; font-size:8vw; line-height:0.95;
+  letter-spacing:-0.04em; font-variation-settings:'opsz' 144;
+}
+.hero h1 .em { font-style:italic; font-weight:400; color:var(--accent); }
+.hero h1 .light { color:var(--ink-soft); font-weight:300; }
+.hero .lede { font-size:1.15rem; line-height:1.7; max-width:480px; color:var(--ink-mid); }
+.hero .lede::first-letter {
+  font-family:'Fraunces',serif; font-size:4rem; float:left; line-height:0.85;
+  font-weight:500; margin:0.2rem 0.6rem 0 0; color:var(--accent);
+}
+.hero-meta {
+  margin-top:3rem; padding-top:2rem; border-top:1px solid var(--rule-soft);
+  display:grid; grid-template-columns:repeat(4,1fr); gap:2rem;
+}
+.meta-item .label { font-family:'JetBrains Mono',monospace; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.15em; color:var(--ink-soft); margin-bottom:0.4rem; }
+.meta-item .val { font-family:'Fraunces',serif; font-size:1.05rem; font-weight:500; }
+
+/* SECTION NUMBERED */
+.section { padding:6rem 0; border-bottom:1px solid var(--rule); }
+.sec-head { display:grid; grid-template-columns:140px 1fr; gap:2rem; margin-bottom:4rem; align-items:start; }
+.sec-num { font-family:'Fraunces',serif; font-size:2.5rem; font-weight:300; font-style:italic; color:var(--accent); font-variation-settings:'opsz' 144; }
+.sec-head h2 { font-family:'Fraunces',serif; font-size:3.4rem; font-weight:400; line-height:1.05; letter-spacing:-0.02em; max-width:780px; }
+.sec-head h2 .em { font-style:italic; color:var(--accent); }
+.sec-head .kicker { font-family:'JetBrains Mono',monospace; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.2em; color:var(--ink-soft); margin-bottom:0.8rem; }
+
+/* STATS BAR */
+.stats {
+  display:grid; grid-template-columns:repeat(4,1fr); padding:3rem 0;
+  border-top:2px solid var(--ink); border-bottom:1px solid var(--ink); margin-top:4rem;
+}
+.stat { padding:0 2rem; border-right:1px solid var(--rule-soft); }
+.stat:last-child { border-right:none; }
+.stat .num { font-family:'Fraunces',serif; font-size:5rem; font-weight:300; line-height:1; letter-spacing:-0.03em; font-variation-settings:'opsz' 144; }
+.stat .num .em { font-style:italic; color:var(--accent); }
+.stat .label { font-family:'JetBrains Mono',monospace; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.15em; color:var(--ink-soft); margin-top:0.8rem; }
+
+/* SERVICES — magazine columns */
+.services { display:grid; grid-template-columns:repeat(3,1fr); gap:0; border-top:1px solid var(--rule-soft); }
+.svc { padding:2.5rem 2rem; border-right:1px solid var(--rule-soft); border-bottom:1px solid var(--rule-soft); }
+.svc:nth-child(3n) { border-right:none; }
+.svc .n { font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:var(--ink-soft); margin-bottom:1.5rem; }
+.svc h3 { font-family:'Fraunces',serif; font-size:1.5rem; font-weight:500; letter-spacing:-0.01em; margin-bottom:0.8rem; }
+.svc h3 .em { font-style:italic; color:var(--accent); }
+.svc p { color:var(--ink-mid); font-size:0.95rem; line-height:1.65; }
+.svc:hover { background:rgba(194,65,12,0.04); }
+
+/* WORK — featured + grid */
+.work-feature {
+  display:grid; grid-template-columns:1.4fr 1fr; gap:4rem; padding:3rem 0;
+  border-bottom:1px solid var(--rule); margin-bottom:0;
+}
+.work-feature .img-block {
+  aspect-ratio:4/5; background:linear-gradient(135deg,#FFE4D2,#FED7AA);
+  display:flex; align-items:flex-end; padding:2rem; border-radius:2px;
+}
+.work-feature .img-block img { max-width:60%; }
+.work-feature .meta { padding:1rem 0; display:flex; flex-direction:column; justify-content:center; }
+.work-feature .tag-row { display:flex; gap:0.5rem; margin-bottom:1.5rem; }
+.work-feature .tag { font-family:'JetBrains Mono',monospace; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.12em; padding:0.3rem 0.8rem; border:1px solid var(--ink); border-radius:100px; }
+.work-feature h3 { font-family:'Fraunces',serif; font-size:3.5rem; font-weight:400; line-height:1; letter-spacing:-0.025em; margin-bottom:1rem; }
+.work-feature h3 .em { font-style:italic; color:var(--accent); }
+.work-feature p { font-size:1.05rem; line-height:1.7; color:var(--ink-mid); margin-bottom:2rem; max-width:480px; }
+.work-feature .read {
+  font-family:'JetBrains Mono',monospace; font-size:0.78rem; text-transform:uppercase;
+  letter-spacing:0.15em; color:var(--accent); display:inline-flex; align-items:center; gap:0.5rem;
+  padding-bottom:0.4rem; border-bottom:1px solid var(--accent); align-self:flex-start;
+}
+.work-feature .read:hover { gap:0.9rem; }
+
+.work-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:0; }
+.proj { padding:2.5rem 2rem; border-right:1px solid var(--rule-soft); border-bottom:1px solid var(--rule-soft); transition:background 0.3s; position:relative; }
+.proj:nth-child(3n) { border-right:none; }
+.proj .num { font-family:'JetBrains Mono',monospace; font-size:0.72rem; color:var(--ink-soft); margin-bottom:1rem; display:block; }
+.proj .tags { display:flex; gap:0.4rem; margin-bottom:1rem; flex-wrap:wrap; }
+.proj .tag { font-family:'JetBrains Mono',monospace; font-size:0.66rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--ink-soft); }
+.proj .tag::after { content:'·'; margin-left:0.4rem; color:var(--ink-soft); }
+.proj .tag:last-child::after { display:none; }
+.proj h3 { font-family:'Fraunces',serif; font-size:1.6rem; font-weight:400; letter-spacing:-0.015em; margin-bottom:0.5rem; line-height:1.15; }
+.proj h3 .em { font-style:italic; color:var(--accent); }
+.proj p { color:var(--ink-mid); font-size:0.92rem; line-height:1.6; }
+.proj .arr { position:absolute; top:2.5rem; right:2rem; font-size:1.2rem; color:var(--ink-soft); }
+.proj:hover { background:rgba(194,65,12,0.04); }
+.proj:hover .arr { color:var(--accent); }
+.proj a.full { position:absolute; inset:0; z-index:2; }
+
+/* TECH */
+.tech-strip { padding:2rem 0; display:flex; flex-wrap:wrap; gap:0; align-items:baseline; }
+.tech-strip span { font-family:'Fraunces',serif; font-size:2rem; font-weight:400; padding:0 1rem; color:var(--ink-mid); }
+.tech-strip span:hover { color:var(--accent); font-style:italic; }
+.tech-strip .sep { font-size:1.2rem; color:var(--ink-soft); padding:0 0.3rem; }
+
+/* JOURNEY */
+.j-list { border-top:1px solid var(--ink); }
+.j-row {
+  display:grid; grid-template-columns:80px 200px 1fr 200px; gap:2rem;
+  padding:2rem; border-bottom:1px solid var(--rule-soft); align-items:center;
+  transition:background 0.3s; position:relative;
+}
+.j-row:hover { background:rgba(194,65,12,0.04); padding-left:2.5rem; }
+.j-row .yr { font-family:'JetBrains Mono',monospace; font-size:0.85rem; color:var(--ink-soft); }
+.j-row .role { font-family:'JetBrains Mono',monospace; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.15em; color:var(--accent); }
+.j-row h3 { font-family:'Fraunces',serif; font-size:1.5rem; font-weight:400; letter-spacing:-0.01em; }
+.j-row h3 .em { font-style:italic; }
+.j-row .desc { font-family:'JetBrains Mono',monospace; font-size:0.78rem; color:var(--ink-soft); text-align:right; }
+
+/* CTA */
+.cta { padding:8rem 0; text-align:center; background:var(--ink); color:var(--paper); }
+.cta .kicker { font-family:'JetBrains Mono',monospace; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.2em; color:var(--accent-soft); margin-bottom:2rem; }
+.cta h2 { font-family:'Fraunces',serif; font-size:5rem; font-weight:300; line-height:1; letter-spacing:-0.03em; font-variation-settings:'opsz' 144; max-width:900px; margin:0 auto 2rem; }
+.cta h2 .em { font-style:italic; color:var(--accent-soft); }
+.cta p { font-size:1.05rem; opacity:0.7; margin-bottom:3rem; }
+.cta-btns { display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; }
+.cta-btns a {
+  font-family:'JetBrains Mono',monospace; font-size:0.85rem; padding:1rem 2rem;
+  background:var(--paper); color:var(--ink); border-radius:0; transition:all 0.2s;
+  border:1px solid var(--paper);
+}
+.cta-btns a.ghost { background:transparent; color:var(--paper); border-color:rgba(245,241,232,0.3); }
+.cta-btns a:hover { transform:translateY(-2px); background:var(--accent); color:var(--paper); border-color:var(--accent); }
+
+footer { padding:2rem 3rem; display:flex; justify-content:space-between; font-family:'JetBrains Mono',monospace; font-size:0.72rem; color:var(--ink-soft); }
+
+.reveal { opacity:0; transform:translateY(20px); transition:opacity 0.6s, transform 0.6s; }
+.reveal.in { opacity:1; transform:none; }
+
+@media(max-width:900px) {
+  .masthead { padding:1rem 1.5rem; }
+  .masthead nav { display:none; }
+  .col { padding:0 1.5rem; }
+  .hero-grid { grid-template-columns:1fr; gap:2rem; }
+  .hero h1 { font-size:13vw; }
+  .hero-meta, .stats, .services, .work-grid { grid-template-columns:1fr 1fr; }
+  .sec-head { grid-template-columns:1fr; }
+  .sec-head h2 { font-size:2.2rem; }
+  .work-feature { grid-template-columns:1fr; gap:2rem; }
+  .work-feature h3 { font-size:2.2rem; }
+  .j-row { grid-template-columns:60px 1fr; }
+  .j-row .role, .j-row .desc { display:none; }
+  .cta h2 { font-size:2.6rem; }
+}
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="brand">Code<i>Mug</i></div>
+  <nav>
+    <a href="#services">Services</a>
+    <a href="#work">Work</a>
+    <a href="#tech">Tech</a>
+    <a href="#journey">Journey</a>
+    <a href="#contact">Contact</a>
+  </nav>
+  <div class="issue">Vol. II — Hong Kong</div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="col">
+    <div class="hero-top">
+      <div class="mono">A Software Studio</div>
+      <div class="mono">Est. MMXXIV — 22°N 114°E</div>
+    </div>
+    <div class="hero-grid">
+      <div>
+        <h1>We craft <span class="em">digital</span><br/>products <span class="light">that</span><br/><span class="em">matter.</span></h1>
+      </div>
+      <p class="lede">CodeMug is a Hong Kong-based software studio. We design, build, and ship mobile apps, web platforms, IoT systems, and blockchain solutions — for startups, listed firms, and everything in between.</p>
+    </div>
+    <div class="hero-meta">
+      <div class="meta-item"><div class="label">Founded</div><div class="val fraunces">Hong Kong, 2024</div></div>
+      <div class="meta-item"><div class="label">Disciplines</div><div class="val fraunces">Mobile · Web · Web3 · IoT · AI</div></div>
+      <div class="meta-item"><div class="label">Languages</div><div class="val fraunces">Swift · Flutter · Rust · Go</div></div>
+      <div class="meta-item"><div class="label">Availability</div><div class="val fraunces"><span style="color:var(--accent);">●</span> Accepting projects</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section id="services" class="section">
+  <div class="col">
+    <div class="sec-head reveal">
+      <div class="sec-num">01</div>
+      <div>
+        <div class="kicker">Capabilities — What We Do</div>
+        <h2>End-to-end <span class="em">product development</span> from a small team that has shipped a lot.</h2>
+      </div>
+    </div>
+    <div class="services">
+      <div class="svc reveal"><div class="n">01.01</div><h3>Mobile <span class="em">Apps</span></h3><p>Cross-platform applications built with Flutter, Swift, and React Native for iOS and Android.</p></div>
+      <div class="svc reveal"><div class="n">01.02</div><h3>Web <span class="em">Platforms</span></h3><p>Modern web apps with React, Vue.js, Next.js, and Nuxt for scalable digital experiences.</p></div>
+      <div class="svc reveal"><div class="n">01.03</div><h3>IoT <span class="em">Systems</span></h3><p>Real-time monitoring with AWS IoT, sensor integration, and automated alerts.</p></div>
+      <div class="svc reveal"><div class="n">01.04</div><h3>Blockchain <span class="em">& Web3</span></h3><p>Smart contracts, DeFi platforms, NFT ecosystems, and GameFi across major chains.</p></div>
+      <div class="svc reveal"><div class="n">01.05</div><h3>AI <span class="em">& Machine Learning</span></h3><p>AI agents, NLP, computer vision, and predictive analytics — practical applications.</p></div>
+      <div class="svc reveal"><div class="n">01.06</div><h3>UI/UX <span class="em">Design</span></h3><p>User-centered design creating intuitive interfaces and seamless digital experiences.</p></div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="num">50<span class="em">+</span></div><div class="label">Apps Delivered</div></div>
+      <div class="stat"><div class="num"><span class="em">$</span>50M</div><div class="label">Platform Built</div></div>
+      <div class="stat"><div class="num">6</div><div class="label">Industries Served</div></div>
+      <div class="stat"><div class="num">17</div><div class="label">Orgs & Teams</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- WORK -->
+<section id="work" class="section">
+  <div class="col">
+    <div class="sec-head reveal">
+      <div class="sec-num">02</div>
+      <div>
+        <div class="kicker">Selected Work — Case Files</div>
+        <h2>A look at projects we've <span class="em">shipped</span> — across finance, healthcare, lifestyle, and Web3.</h2>
+      </div>
+    </div>
+
+    <article class="work-feature reveal">
+      <div class="img-block"><img src="img/projects/xstro.png" alt=""></div>
+      <div class="meta">
+        <div class="tag-row"><span class="tag">Case 01</span><span class="tag">GameFi</span><span class="tag">$50M</span></div>
+        <h3>XSTRO — <span class="em">XGameFi</span></h3>
+        <p>A $50M NFT staking GameFi platform built across Ethereum and Solana. Passed a full SlowMist security audit, with sub-second transaction confirmation and a non-custodial architecture from day one.</p>
+        <a class="read" href="projects/xstro.html">Read case file →</a>
+      </div>
+    </article>
+
+    <div class="work-grid">
+      <a href="projects/provelo.html" class="proj reveal"><span class="full"></span><span class="num">№ 02</span><div class="tags"><span class="tag">AI</span><span class="tag">SaaS</span></div><h3>Provelo <span class="em">AI</span></h3><p>AI developer assessment with rigged AI traps and 6-dimension scoring.</p><span class="arr">→</span></a>
+      <a href="projects/cyberport.html" class="proj reveal"><span class="full"></span><span class="num">№ 03</span><div class="tags"><span class="tag">IoT</span><span class="tag">Telegram</span></div><h3>Cyberport <span class="em">AC</span></h3><p>Real-time temperature monitoring for Hong Kong Cyberport facilities.</p><span class="arr">→</span></a>
+      <a href="projects/solar-inverter.html" class="proj reveal"><span class="full"></span><span class="num">№ 04</span><div class="tags"><span class="tag">IoT</span><span class="tag">AWS</span></div><h3>Solar <span class="em">Inverter</span></h3><p>Flutter + AWS IoT for inverter management and monitoring.</p><span class="arr">→</span></a>
+      <a href="projects/imbert.html" class="proj reveal"><span class="full"></span><span class="num">№ 05</span><div class="tags"><span class="tag">Property</span><span class="tag">SEO</span></div><h3>Imbert <span class="em">Property</span></h3><p>Property management website with viewing scheduler and SEO optimization.</p><span class="arr">→</span></a>
+      <a href="projects/grappas.html" class="proj reveal"><span class="full"></span><span class="num">№ 06</span><div class="tags"><span class="tag">WordPress</span><span class="tag">F&B</span></div><h3>Grappas <span class="em">Restaurant</span></h3><p>Restaurant website with reservation system and CMS.</p><span class="arr">→</span></a>
+      <a href="projects/sanmiguel.html" class="proj reveal"><span class="full"></span><span class="num">№ 07</span><div class="tags"><span class="tag">Interactive</span></div><h3>San Miguel <span class="em">Draw</span></h3><p>Real-time lucky draw platform for San Miguel events.</p><span class="arr">→</span></a>
+      <a href="projects/lovefitness.html" class="proj reveal"><span class="full"></span><span class="num">№ 08</span><div class="tags"><span class="tag">Fitness</span><span class="tag">Flutter</span></div><h3>Love <span class="em">Fitness</span></h3><p>Fitness app for Rotary Club & Tin Shing Dojang.</p><span class="arr">→</span></a>
+      <a href="projects/apollo.html" class="proj reveal"><span class="full"></span><span class="num">№ 09</span><div class="tags"><span class="tag">CMS</span><span class="tag">Luxury</span></div><h3>Apollo <span class="em">Future Mobility</span></h3><p>Luxury car CMS with real-time HKEX data scraper.</p><span class="arr">→</span></a>
+      <a href="projects/dash-events.html" class="proj reveal"><span class="full"></span><span class="num">№ 10</span><div class="tags"><span class="tag">Events</span><span class="tag">Payments</span></div><h3>D-ASH <span class="em">Events</span></h3><p>Event ticketing with integrated payment & scanner SDK.</p><span class="arr">→</span></a>
+      <a href="projects/haira.html" class="proj reveal"><span class="full"></span><span class="num">№ 11</span><div class="tags"><span class="tag">Lifestyle</span></div><h3>Haira</h3><p>Hong Kong hairstylist discovery platform.</p><span class="arr">→</span></a>
+      <a href="projects/plandlord.html" class="proj reveal"><span class="full"></span><span class="num">№ 12</span><div class="tags"><span class="tag">Property</span></div><h3>P<span class="em">Landlord</span></h3><p>Property management app & website for Westona Limited.</p><span class="arr">→</span></a>
+      <a href="projects/charclevpn.html" class="proj reveal"><span class="full"></span><span class="num">№ 13</span><div class="tags"><span class="tag">VPN</span></div><h3>Charcle<span class="em">VPN</span></h3><p>VPN service for iOS (Swift) and Android (Flutter).</p><span class="arr">→</span></a>
+      <a href="projects/wedding-planda.html" class="proj reveal"><span class="full"></span><span class="num">№ 14</span><div class="tags"><span class="tag">Lifestyle</span></div><h3>Wedding <span class="em">Planda</span></h3><p>Wedding planner mobile application.</p><span class="arr">→</span></a>
+      <a href="projects/turnalert.html" class="proj reveal"><span class="full"></span><span class="num">№ 15</span><div class="tags"><span class="tag">FinTech</span></div><h3>Turn <span class="em">Alert</span></h3><p>Stock investment & analysis with real-time charts.</p><span class="arr">→</span></a>
+      <a href="projects/sporttimego.html" class="proj reveal"><span class="full"></span><span class="num">№ 16</span><div class="tags"><span class="tag">Sports</span></div><h3>Sport<span class="em">TimeGo</span></h3><p>Sports app with APNS & GCM push notifications.</p><span class="arr">→</span></a>
+      <a href="projects/cny-racing.html" class="proj reveal"><span class="full"></span><span class="num">№ 17</span><div class="tags"><span class="tag">Game</span></div><h3>CNY <span class="em">Racing</span></h3><p>Taxi racing mini game with Chinese New Year theme.</p><span class="arr">→</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- TECH -->
+<section id="tech" class="section">
+  <div class="col">
+    <div class="sec-head reveal">
+      <div class="sec-num">03</div>
+      <div>
+        <div class="kicker">Stack — Tools of the Trade</div>
+        <h2>Battle-tested <span class="em">tools</span> for every layer of the stack.</h2>
+      </div>
+    </div>
+    <div class="tech-strip">
+      <span>Flutter</span><span class="sep">·</span><span>Swift</span><span class="sep">·</span><span>Kotlin</span><span class="sep">·</span><span>React Native</span><span class="sep">·</span>
+      <span>Vue.js</span><span class="sep">·</span><span>Nuxt.js</span><span class="sep">·</span><span>Next.js</span><span class="sep">·</span><span>React</span><span class="sep">·</span>
+      <span>TypeScript</span><span class="sep">·</span><span>Rust</span><span class="sep">·</span><span>Go</span><span class="sep">·</span><span>Python</span><span class="sep">·</span>
+      <span>AWS</span><span class="sep">·</span><span>Firebase</span><span class="sep">·</span><span>Solidity</span><span class="sep">·</span><span>Aiken</span><span class="sep">·</span>
+      <span>Docker</span><span class="sep">·</span><span>PostgreSQL</span>
+    </div>
+  </div>
+</section>
+
+<!-- JOURNEY -->
+<section id="journey" class="section">
+  <div class="col">
+    <div class="sec-head reveal">
+      <div class="sec-num">04</div>
+      <div>
+        <div class="kicker">Journey — A Working Resume</div>
+        <h2>Products built <span class="em">along the way</span> — where we've contributed, led, or founded.</h2>
+      </div>
+    </div>
+    <div class="j-list">
+      <div class="j-row reveal"><div class="yr">2025—</div><div class="role">Consultant</div><h3>Strike <span class="em">Finance</span></h3><div class="desc">DeFi perpetuals · CLOB · sub-1s</div></div>
+      <div class="j-row reveal"><div class="yr">2025</div><div class="role">Builder</div><h3>mAIcrotrader</h3><div class="desc">AI multi-agent · AutoGen</div></div>
+      <div class="j-row reveal"><div class="yr">2024—</div><div class="role">CTO</div><h3>Carbon · <span class="em">xBeefi / Prodds</span></h3><div class="desc">Base · Draper U · SF winner</div></div>
+      <div class="j-row reveal"><div class="yr">2024</div><div class="role">Builder</div><h3>5GenCare</h3><div class="desc">AI elderly & baby care</div></div>
+      <div class="j-row reveal"><div class="yr">2023</div><div class="role">Builder</div><h3>Peblx</h3><div class="desc">AI legal & compliance</div></div>
+      <div class="j-row reveal"><div class="yr">2023</div><div class="role">Builder</div><h3>Sellwyse <span class="em">/ Athion</span></h3><div class="desc">Sales + fitness tech</div></div>
+      <div class="j-row reveal"><div class="yr">2022</div><div class="role">Lead Dev</div><h3>Fusang</h3><div class="desc">Licensed exchange · Go</div></div>
+      <div class="j-row reveal"><div class="yr">2021</div><div class="role">Sr. Consultant</div><h3>HK Disneyland <span class="em">App</span></h3><div class="desc">KEYTEO · official app</div></div>
+      <div class="j-row reveal"><div class="yr">2020</div><div class="role">Tech Lead</div><h3>UleEco — <span class="em">Motorola Nursery</span></h3><div class="desc">Baby monitoring · ChillaxCare</div></div>
+      <div class="j-row reveal"><div class="yr">2019</div><div class="role">Mobile Dev</div><h3>MobiJuce</h3><div class="desc">Lifestyle · Swift 5.0</div></div>
+      <div class="j-row reveal"><div class="yr">2018</div><div class="role">Project Associate</div><h3>HK Polytechnic <span class="em">University</span></h3><div class="desc">Capstone Ninja · React Native</div></div>
+      <div class="j-row reveal"><div class="yr">2017</div><div class="role">Developer</div><h3>C&T <span class="em">ChainStorePlus</span></h3><div class="desc">Retail mPOS · Swift 4.1</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="contact" class="cta">
+  <div class="col">
+    <div class="kicker">Editor's Note — 05</div>
+    <h2>Let's build something <span class="em">that matters</span> together.</h2>
+    <p>Hong Kong-based · Working globally · Replying within 24h.</p>
+    <div class="cta-btns">
+      <a href="mailto:ken@codemug.io">ken@codemug.io</a>
+      <a class="ghost" href="mailto:dev@kenhung.io">dev@kenhung.io</a>
+      <a class="ghost" href="https://t.me/kenhunghk">@kenhunghk</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div>© 2026 CodeMug Limited</div>
+  <div>Hong Kong · Vol. II · MMXXVI</div>
+</footer>
+
+<script>
+const io = new IntersectionObserver(es => es.forEach(e => e.isIntersecting && e.target.classList.add('in')), {threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+</body>
+</html>

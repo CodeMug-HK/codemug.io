@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CodeMug // Brutalist</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F5F0E5;
+  --ink: #0A0A0A;
+  --paper: #FFFFFF;
+  --accent: #FF4500;
+  --yellow: #FFD400;
+  --blue: #2E5BFF;
+  --green: #00B26F;
+  --pink: #FF60B5;
+  --line: #0A0A0A;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  font-family:'Space Grotesk',sans-serif; background:var(--bg); color:var(--ink);
+  -webkit-font-smoothing:antialiased; font-size:16px;
+}
+.display { font-family:'Archivo Black',sans-serif; font-weight:900; letter-spacing:-0.04em; line-height:0.9; text-transform:uppercase; }
+.mono { font-family:'Space Mono',monospace; }
+a { color:inherit; text-decoration:none; }
+
+/* MARQUEE TOP */
+.tape {
+  background:var(--ink); color:var(--bg); padding:0.5rem 0; overflow:hidden;
+  font-family:'Space Mono',monospace; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.1em;
+}
+.tape-track { display:flex; gap:2rem; width:max-content; animation:tape 25s linear infinite; }
+.tape-track span::before { content:'▲'; color:var(--accent); margin-right:0.5rem; }
+@keyframes tape { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+/* NAV */
+.nav {
+  border-bottom:4px solid var(--ink); background:var(--bg); position:sticky; top:0; z-index:100;
+  display:grid; grid-template-columns:1fr auto 1fr; padding:1.2rem 2rem; align-items:center;
+}
+.nav .brand { font-family:'Archivo Black',sans-serif; font-size:1.6rem; letter-spacing:-0.04em; }
+.nav .brand .dot { display:inline-block; width:18px; height:18px; background:var(--accent); border:3px solid var(--ink); margin-right:0.4rem; vertical-align:middle; }
+.nav .links { display:flex; gap:0.5rem; }
+.nav .links a {
+  padding:0.5rem 1rem; border:2px solid var(--ink); font-family:'Space Mono',monospace;
+  font-size:0.78rem; text-transform:uppercase; font-weight:700; background:var(--paper);
+  transition:all 0.1s;
+}
+.nav .links a:hover { background:var(--accent); color:var(--paper); transform:translate(-2px,-2px); box-shadow:4px 4px 0 var(--ink); }
+.nav .right { text-align:right; font-family:'Space Mono',monospace; font-size:0.78rem; }
+.nav .right .blink { color:var(--accent); animation:blink 1s steps(2) infinite; }
+@keyframes blink { to{opacity:0} }
+
+/* CONTAINER */
+.col { max-width:1320px; margin:0 auto; padding:0 2rem; }
+
+/* HERO */
+.hero { padding:4rem 0 3rem; border-bottom:4px solid var(--ink); position:relative; overflow:hidden; }
+.hero::before {
+  content:''; position:absolute; top:-50px; right:-50px; width:300px; height:300px;
+  background:var(--yellow); border:4px solid var(--ink); transform:rotate(15deg);
+  z-index:0;
+}
+.hero::after {
+  content:''; position:absolute; bottom:-80px; left:40%; width:200px; height:200px;
+  background:var(--accent); border-radius:50%; border:4px solid var(--ink);
+}
+.hero h1 { font-size:clamp(3rem, 11vw, 11rem); margin-bottom:1.5rem; position:relative; z-index:1; }
+.hero h1 .outline {
+  -webkit-text-stroke:3px var(--ink); color:transparent;
+}
+.hero h1 .hl { background:var(--accent); color:var(--bg); padding:0 0.2em; box-shadow:8px 8px 0 var(--ink); display:inline-block; }
+.hero h1 .scribble { position:relative; display:inline-block; }
+.hero h1 .scribble::after {
+  content:''; position:absolute; left:-5%; bottom:5%; width:110%; height:0.18em;
+  background:var(--blue); z-index:-1; transform:skewY(-2deg);
+}
+.hero-meta {
+  margin-top:3rem; display:grid; grid-template-columns:repeat(4,1fr); gap:0;
+  border:4px solid var(--ink); background:var(--paper); position:relative; z-index:1;
+}
+.hero-meta .cell { padding:1.5rem; border-right:3px solid var(--ink); position:relative; }
+.hero-meta .cell:last-child { border-right:none; }
+.hero-meta .lbl { font-family:'Space Mono',monospace; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.15em; margin-bottom:0.5rem; }
+.hero-meta .val { font-family:'Archivo Black',sans-serif; font-size:1.6rem; letter-spacing:-0.03em; }
+.hero-meta .cell:nth-child(1) { background:var(--accent); color:var(--paper); }
+.hero-meta .cell:nth-child(2) { background:var(--yellow); }
+.hero-meta .cell:nth-child(3) { background:var(--paper); }
+.hero-meta .cell:nth-child(4) { background:var(--ink); color:var(--bg); }
+
+.hero-lede {
+  margin-top:3rem; max-width:760px; font-size:1.2rem; line-height:1.5;
+  padding:1.5rem; background:var(--paper); border:4px solid var(--ink);
+  box-shadow:10px 10px 0 var(--ink); position:relative; z-index:1;
+}
+.hero-lede::before {
+  content:'01 //'; position:absolute; top:-1rem; left:1rem; background:var(--bg); padding:0 0.6rem;
+  font-family:'Space Mono',monospace; font-size:0.85rem; font-weight:700;
+}
+.hero-lede strong { background:var(--yellow); padding:0 0.2em; }
+
+/* SECTION */
+.section { padding:5rem 0; border-bottom:4px solid var(--ink); position:relative; }
+.section.alt { background:var(--ink); color:var(--bg); }
+.section.alt .sec-head h2 { color:var(--bg); }
+.section.alt .sec-head h2 .accent { color:var(--yellow); }
+.sec-head { margin-bottom:3rem; display:grid; grid-template-columns:auto 1fr; gap:1.5rem; align-items:end; }
+.sec-num {
+  font-family:'Archivo Black',sans-serif; font-size:6rem; letter-spacing:-0.06em;
+  -webkit-text-stroke:3px var(--ink); color:transparent; line-height:0.85;
+}
+.section.alt .sec-num { -webkit-text-stroke-color:var(--bg); }
+.sec-head h2 { font-size:clamp(2rem, 5vw, 4rem); font-family:'Archivo Black',sans-serif; letter-spacing:-0.03em; line-height:0.95; text-transform:uppercase; }
+.sec-head h2 .accent { color:var(--accent); }
+.sec-head h2 .ul { border-bottom:6px solid var(--accent); }
+
+/* SERVICES */
+.svc-grid {
+  display:grid; grid-template-columns:repeat(3,1fr); gap:0;
+  border:4px solid var(--ink); background:var(--ink);
+}
+.svc { padding:2rem; background:var(--paper); transition:all 0.15s; }
+.svc:nth-child(odd) { background:var(--bg); }
+.svc:nth-child(3n+2) { background:var(--paper); }
+.svc:nth-child(1) { background:var(--yellow); }
+.svc:nth-child(4) { background:var(--accent); color:var(--paper); }
+.svc:nth-child(6) { background:var(--blue); color:var(--paper); }
+.svc { border-right:3px solid var(--ink); border-bottom:3px solid var(--ink); }
+.svc:nth-child(3n) { border-right:none; }
+.svc:nth-child(n+4) { border-bottom:none; }
+.svc .num { font-family:'Space Mono',monospace; font-size:0.78rem; margin-bottom:1.5rem; font-weight:700; }
+.svc .ico { width:50px; height:50px; border:3px solid currentColor; display:flex; align-items:center; justify-content:center; margin-bottom:1.2rem; font-family:'Archivo Black',sans-serif; font-size:1.2rem; }
+.svc h3 { font-family:'Archivo Black',sans-serif; font-size:1.4rem; letter-spacing:-0.02em; line-height:1; text-transform:uppercase; margin-bottom:0.8rem; }
+.svc p { font-size:0.95rem; line-height:1.5; }
+.svc:hover { transform:translate(-3px,-3px); box-shadow:6px 6px 0 var(--ink); position:relative; z-index:2; }
+
+/* STATS — block grid */
+.stats {
+  display:grid; grid-template-columns:repeat(4,1fr); gap:0;
+  border:4px solid var(--bg);
+}
+.stat { padding:2rem; border-right:3px solid var(--bg); }
+.stat:last-child { border-right:none; }
+.stat .num { font-family:'Archivo Black',sans-serif; font-size:5rem; line-height:0.85; letter-spacing:-0.04em; color:var(--yellow); }
+.stat .lbl { font-family:'Space Mono',monospace; font-size:0.78rem; text-transform:uppercase; margin-top:0.8rem; letter-spacing:0.1em; color:var(--bg); }
+
+/* WORK */
+.proj-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; }
+.proj {
+  background:var(--paper); border:4px solid var(--ink); padding:1.5rem;
+  position:relative; transition:all 0.15s; display:flex; flex-direction:column;
+}
+.proj:hover { transform:translate(-4px,-4px); box-shadow:8px 8px 0 var(--ink); }
+.proj a.full { position:absolute; inset:0; z-index:2; }
+.proj .top { display:flex; align-items:center; gap:0.8rem; margin-bottom:1rem; padding-bottom:1rem; border-bottom:2px dashed var(--ink); }
+.proj .top img { width:44px; height:44px; border:3px solid var(--ink); object-fit:contain; background:var(--bg); padding:3px; }
+.proj .top .letter { width:44px; height:44px; border:3px solid var(--ink); background:var(--yellow); font-family:'Archivo Black',sans-serif; font-size:1.4rem; display:flex; align-items:center; justify-content:center; }
+.proj .top .num { font-family:'Space Mono',monospace; font-size:0.78rem; margin-left:auto; font-weight:700; }
+.proj h3 { font-family:'Archivo Black',sans-serif; font-size:1.3rem; letter-spacing:-0.02em; line-height:1; text-transform:uppercase; margin-bottom:0.6rem; }
+.proj p { font-size:0.9rem; line-height:1.5; flex:1; }
+.proj .tags { display:flex; gap:0.4rem; margin-top:1rem; flex-wrap:wrap; }
+.proj .tag { font-family:'Space Mono',monospace; font-size:0.7rem; padding:0.2rem 0.5rem; border:2px solid var(--ink); font-weight:700; }
+.proj .tag.acc { background:var(--accent); color:var(--paper); border-color:var(--accent); }
+.proj.feat { background:var(--accent); color:var(--paper); grid-column:span 2; }
+.proj.feat .top { border-bottom-color:var(--paper); }
+.proj.feat .top .letter { background:var(--paper); }
+.proj.feat .tag { color:var(--paper); border-color:var(--paper); }
+.proj.feat h3 { font-size:2.4rem; }
+.proj.alt { background:var(--yellow); }
+.proj.dark { background:var(--ink); color:var(--bg); }
+.proj.dark .top img { background:var(--paper); }
+.proj.dark .tag { border-color:var(--bg); color:var(--bg); }
+.proj.blue { background:var(--blue); color:var(--paper); }
+.proj.blue .tag { color:var(--paper); border-color:var(--paper); }
+
+/* FILTERS */
+.filters { display:flex; gap:0.5rem; margin-bottom:2rem; flex-wrap:wrap; }
+.filt {
+  padding:0.5rem 1rem; border:3px solid var(--ink); background:var(--paper);
+  font-family:'Space Mono',monospace; font-size:0.78rem; text-transform:uppercase; font-weight:700;
+  cursor:pointer; transition:all 0.15s;
+}
+.filt:hover, .filt.active { background:var(--ink); color:var(--bg); transform:translate(-2px,-2px); box-shadow:4px 4px 0 var(--accent); }
+.proj.hide { display:none; }
+
+/* TECH GRID */
+.tech-block {
+  display:grid; grid-template-columns:repeat(8,1fr); gap:0;
+  border:4px solid var(--ink);
+}
+.tech-pill {
+  padding:1.2rem 0.5rem; text-align:center; font-family:'Archivo Black',sans-serif;
+  font-size:0.95rem; letter-spacing:-0.02em; text-transform:uppercase;
+  border-right:3px solid var(--ink); border-bottom:3px solid var(--ink);
+  background:var(--paper); transition:all 0.15s;
+}
+.tech-pill:nth-child(8n) { border-right:none; }
+.tech-pill:nth-last-child(-n+8) { border-bottom:none; }
+.tech-pill:nth-child(7n) { background:var(--yellow); }
+.tech-pill:nth-child(5n) { background:var(--accent); color:var(--paper); }
+.tech-pill:hover { background:var(--ink); color:var(--bg); transform:scale(1.05); }
+
+/* JOURNEY */
+.j-list { border-top:4px solid var(--bg); }
+.j-row {
+  display:grid; grid-template-columns:120px 220px 1fr 60px; gap:1.5rem;
+  padding:1.5rem 0; border-bottom:3px solid var(--bg); align-items:center;
+  transition:all 0.15s; position:relative;
+}
+.j-row:hover { padding-left:1rem; background:rgba(255,212,0,0.05); }
+.j-row:hover .arr { transform:translateX(8px); color:var(--yellow); }
+.j-row .role {
+  font-family:'Space Mono',monospace; font-size:0.7rem; text-transform:uppercase;
+  padding:0.3rem 0.6rem; background:var(--accent); color:var(--paper); font-weight:700;
+  display:inline-block; justify-self:start;
+}
+.j-row .name { font-family:'Archivo Black',sans-serif; font-size:1.3rem; letter-spacing:-0.02em; text-transform:uppercase; line-height:1; }
+.j-row .desc { font-size:0.88rem; opacity:0.7; }
+.j-row .arr { font-family:'Archivo Black',sans-serif; font-size:2rem; transition:all 0.2s; }
+
+/* CTA */
+.cta {
+  padding:6rem 0; background:var(--accent); color:var(--paper);
+  border-bottom:4px solid var(--ink); text-align:center;
+  background-image: repeating-linear-gradient(45deg, transparent, transparent 30px, rgba(0,0,0,0.05) 30px, rgba(0,0,0,0.05) 60px);
+}
+.cta h2 { font-size:clamp(2.5rem, 8vw, 7rem); margin-bottom:2rem; }
+.cta h2 .outline { -webkit-text-stroke:3px var(--paper); color:transparent; }
+.cta-btns { display:inline-flex; gap:1rem; flex-wrap:wrap; justify-content:center; }
+.cta-btns a {
+  padding:1rem 2rem; background:var(--paper); color:var(--ink); border:3px solid var(--ink);
+  font-family:'Space Mono',monospace; font-size:0.85rem; font-weight:700; text-transform:uppercase;
+  transition:all 0.15s;
+}
+.cta-btns a.dark { background:var(--ink); color:var(--paper); }
+.cta-btns a:hover { transform:translate(-3px,-3px); box-shadow:6px 6px 0 var(--ink); }
+
+footer { padding:2rem; display:flex; justify-content:space-between; font-family:'Space Mono',monospace; font-size:0.78rem; font-weight:700; text-transform:uppercase; }
+
+.reveal { opacity:0; transform:translateY(15px); transition:opacity 0.6s, transform 0.6s; }
+.reveal.in { opacity:1; transform:none; }
+
+@media(max-width:900px) {
+  .nav { grid-template-columns:1fr auto; }
+  .nav .links, .nav .right { display:none; }
+  .col { padding:0 1rem; }
+  .hero-meta, .svc-grid, .proj-grid, .stats, .tech-block { grid-template-columns:1fr 1fr; }
+  .hero-meta .cell:nth-child(2), .stat:nth-child(2) { border-right:none; }
+  .tech-pill:nth-child(8n), .tech-pill:nth-child(2n) { border-right:none; }
+  .tech-pill { border-right:3px solid var(--ink); }
+  .tech-pill:nth-child(2n) { border-right:none; }
+  .sec-head { grid-template-columns:1fr; gap:0.8rem; }
+  .sec-num { font-size:4rem; }
+  .j-row { grid-template-columns:1fr; gap:0.5rem; padding:1.5rem 0; }
+  .j-row .arr { display:none; }
+  .proj.feat { grid-column:span 2; }
+  .proj.feat h3 { font-size:1.5rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="tape">
+  <div class="tape-track">
+    <span>CodeMug // Hong Kong Software Studio</span>
+    <span>Open for Projects 2026</span>
+    <span>50+ Apps Shipped</span>
+    <span>$50M Platform Built</span>
+    <span>Mobile · Web · Web3 · IoT · AI</span>
+    <span>CodeMug // Hong Kong Software Studio</span>
+    <span>Open for Projects 2026</span>
+    <span>50+ Apps Shipped</span>
+    <span>$50M Platform Built</span>
+    <span>Mobile · Web · Web3 · IoT · AI</span>
+  </div>
+</div>
+
+<header class="nav">
+  <div class="brand"><span class="dot"></span>CODEMUG</div>
+  <div class="links">
+    <a href="#services">Services</a>
+    <a href="#work">Work</a>
+    <a href="#tech">Stack</a>
+    <a href="#journey">Journey</a>
+    <a href="#contact">Contact</a>
+  </div>
+  <div class="right"><span class="blink">●</span> HK · GMT+8 · 2026</div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="col">
+    <h1 class="display">
+      We <span class="outline">build</span><br/>
+      <span class="hl">software.</span><br/>
+      <span class="scribble">Hong Kong.</span>
+    </h1>
+    <p class="hero-lede">CodeMug is a <strong>Hong Kong software studio</strong> shipping mobile apps, web platforms, IoT systems, and blockchain solutions. We have built for startups, listed firms, and everyone in between — 50+ apps, $50M in platform value.</p>
+    <div class="hero-meta">
+      <div class="cell"><div class="lbl">// Apps</div><div class="val">50+</div></div>
+      <div class="cell"><div class="lbl">// Built</div><div class="val">$50M</div></div>
+      <div class="cell"><div class="lbl">// Industries</div><div class="val">06</div></div>
+      <div class="cell"><div class="lbl">// Orgs</div><div class="val">17</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section id="services" class="section">
+  <div class="col">
+    <div class="sec-head reveal">
+      <div class="sec-num">01</div>
+      <h2>We <span class="accent">do</span><br/>this <span class="ul">stuff.</span></h2>
+    </div>
+    <div class="svc-grid">
+      <div class="svc reveal">
+        <div class="num">// 01.01</div>
+        <div class="ico">📱</div>
+        <h3>Mobile Apps</h3>
+        <p>Cross-platform with Flutter, Swift, Kotlin, React Native. iOS and Android.</p>
+      </div>
+      <div class="svc reveal">
+        <div class="num">// 01.02</div>
+        <div class="ico">🌐</div>
+        <h3>Web Platforms</h3>
+        <p>React, Vue.js, Next.js, Nuxt. Fast, scalable, accessible.</p>
+      </div>
+      <div class="svc reveal">
+        <div class="num">// 01.03</div>
+        <div class="ico">⚡</div>
+        <h3>IoT Systems</h3>
+        <p>AWS IoT, sensors, real-time monitoring, automated alerts.</p>
+      </div>
+      <div class="svc reveal">
+        <div class="num">// 01.04</div>
+        <div class="ico">◆</div>
+        <h3>Blockchain & Web3</h3>
+        <p>Smart contracts, DeFi, NFT, GameFi. ETH, Solana, Cardano, Base.</p>
+      </div>
+      <div class="svc reveal">
+        <div class="num">// 01.05</div>
+        <div class="ico">★</div>
+        <h3>AI & ML</h3>
+        <p>Agents, NLP, computer vision, predictive analytics. Real applications.</p>
+      </div>
+      <div class="svc reveal">
+        <div class="num">// 01.06</div>
+        <div class="ico">●</div>
+        <h3>UI/UX Design</h3>
+        <p>User-centered design creating interfaces and experiences people enjoy.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="section alt">
+  <div class="col">
+    <div class="sec-head reveal">
+      <div class="sec-num">02</div>
+      <h2>The <span class="accent">numbers</span><br/>we made.</h2>
+    </div>
+    <div class="stats">
+      <div class="stat reveal"><div class="num">50+</div><div class="lbl">Apps Delivered</div></div>
+      <div class="stat reveal"><div class="num">$50M</div><div class="lbl">Platform Built</div></div>
+      <div class="stat reveal"><div class="num">6</div><div class="lbl">Industries</div></div>
+      <div class="stat reveal"><div class="num">17</div><div class="lbl">Orgs & Teams</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- WORK -->
+<section id="work" class="section">
+  <div class="col">
+    <div class="sec-head reveal">
+      <div class="sec-num">03</div>
+      <h2>Selected <span class="accent">work.</span></h2>
+    </div>
+    <div class="filters reveal">
+      <button class="filt active" data-f="all">// All</button>
+      <button class="filt" data-f="mobile">// Mobile</button>
+      <button class="filt" data-f="web">// Web</button>
+      <button class="filt" data-f="iot">// IoT</button>
+      <button class="filt" data-f="web3">// Web3</button>
+      <button class="filt" data-f="ai">// AI</button>
+    </div>
+    <div class="proj-grid">
+      <div class="proj feat reveal" data-cat="web3"><a href="projects/xstro.html" class="full"></a>
+        <div class="top"><img src="img/projects/xstro.png" alt=""><span class="num">// 01</span></div>
+        <h3>XSTRO<br/>XGameFi</h3>
+        <p>$50M NFT staking GameFi platform across Ethereum and Solana. Passed SlowMist security audit. Non-custodial, sub-second settlement.</p>
+        <div class="tags"><span class="tag">GameFi</span><span class="tag">NFT</span><span class="tag">Solidity</span></div>
+      </div>
+      <div class="proj alt reveal" data-cat="ai"><a href="projects/provelo.html" class="full"></a>
+        <div class="top"><img src="img/projects/provelo.png" alt=""><span class="num">// 02</span></div>
+        <h3>Provelo AI</h3>
+        <p>AI developer assessment with rigged AI traps and 6-dimension scoring.</p>
+        <div class="tags"><span class="tag acc">AI</span><span class="tag">SaaS</span></div>
+      </div>
+      <div class="proj reveal" data-cat="iot"><a href="projects/cyberport.html" class="full"></a>
+        <div class="top"><div class="letter">C</div><span class="num">// 03</span></div>
+        <h3>Cyberport AC</h3>
+        <p>Real-time temperature monitoring for HK Cyberport facilities.</p>
+        <div class="tags"><span class="tag acc">IoT</span><span class="tag">Telegram</span></div>
+      </div>
+      <div class="proj dark reveal" data-cat="iot"><a href="projects/solar-inverter.html" class="full"></a>
+        <div class="top"><div class="letter">S</div><span class="num">// 04</span></div>
+        <h3>Solar Inverter</h3>
+        <p>Flutter + AWS IoT for solar inverter management & monitoring.</p>
+        <div class="tags"><span class="tag">IoT</span><span class="tag">AWS</span></div>
+      </div>
+      <div class="proj reveal" data-cat="web"><a href="projects/imbert.html" class="full"></a>
+        <div class="top"><div class="letter" style="background:var(--blue);color:var(--paper);">I</div><span class="num">// 05</span></div>
+        <h3>Imbert Property</h3>
+        <p>Property management website with viewing scheduler and SEO.</p>
+        <div class="tags"><span class="tag">SEO</span><span class="tag">Web</span></div>
+      </div>
+      <div class="proj alt reveal" data-cat="web"><a href="projects/grappas.html" class="full"></a>
+        <div class="top"><div class="letter">G</div><span class="num">// 06</span></div>
+        <h3>Grappas</h3>
+        <p>Restaurant website with reservation system and CMS.</p>
+        <div class="tags"><span class="tag">CMS</span><span class="tag">F&B</span></div>
+      </div>
+      <div class="proj reveal" data-cat="web"><a href="projects/sanmiguel.html" class="full"></a>
+        <div class="top"><div class="letter" style="background:var(--pink);">S</div><span class="num">// 07</span></div>
+        <h3>San Miguel Draw</h3>
+        <p>Real-time lucky draw platform for San Miguel events.</p>
+        <div class="tags"><span class="tag">Realtime</span></div>
+      </div>
+      <div class="proj blue reveal" data-cat="mobile"><a href="projects/lovefitness.html" class="full"></a>
+        <div class="top"><img src="img/projects/lovefitness.png" alt=""><span class="num">// 08</span></div>
+        <h3>Love Fitness</h3>
+        <p>Fitness app for Rotary Club & Tin Shing Dojang.</p>
+        <div class="tags"><span class="tag">Flutter</span><span class="tag">Fitness</span></div>
+      </div>
+      <div class="proj reveal" data-cat="web"><a href="projects/apollo.html" class="full"></a>
+        <div class="top"><img src="img/projects/apollo.png" alt=""><span class="num">// 09</span></div>
+        <h3>Apollo Future Mobility</h3>
+        <p>Luxury car CMS with real-time HKEX data scraper.</p>
+        <div class="tags"><span class="tag acc">CMS</span><span class="tag">Luxury</span></div>
+      </div>
+      <div class="proj alt reveal" data-cat="mobile"><a href="projects/dash-events.html" class="full"></a>
+        <div class="top"><div class="letter">D</div><span class="num">// 10</span></div>
+        <h3>D-ASH Events</h3>
+        <p>Event ticketing with payments and scanner SDK.</p>
+        <div class="tags"><span class="tag">Events</span><span class="tag">Payments</span></div>
+      </div>
+      <div class="proj reveal" data-cat="mobile"><a href="projects/haira.html" class="full"></a>
+        <div class="top"><img src="img/projects/haira.png" alt=""><span class="num">// 11</span></div>
+        <h3>Haira</h3>
+        <p>Hong Kong hairstylist discovery platform.</p>
+        <div class="tags"><span class="tag">Lifestyle</span></div>
+      </div>
+      <div class="proj dark reveal" data-cat="mobile web"><a href="projects/plandlord.html" class="full"></a>
+        <div class="top"><img src="img/projects/plandlord.png" alt=""><span class="num">// 12</span></div>
+        <h3>PLandlord</h3>
+        <p>Property management app & website for Westona.</p>
+        <div class="tags"><span class="tag">Property</span></div>
+      </div>
+      <div class="proj reveal" data-cat="mobile"><a href="projects/charclevpn.html" class="full"></a>
+        <div class="top"><img src="img/projects/charclevpn.png" alt=""><span class="num">// 13</span></div>
+        <h3>CharcleVPN</h3>
+        <p>VPN service for iOS (Swift) and Android (Flutter).</p>
+        <div class="tags"><span class="tag">VPN</span></div>
+      </div>
+      <div class="proj alt reveal" data-cat="mobile"><a href="projects/wedding-planda.html" class="full"></a>
+        <div class="top"><img src="img/projects/wedding_planda.png" alt=""><span class="num">// 14</span></div>
+        <h3>Wedding Planda</h3>
+        <p>Wedding planner mobile application.</p>
+        <div class="tags"><span class="tag">Lifestyle</span></div>
+      </div>
+      <div class="proj reveal" data-cat="mobile"><a href="projects/turnalert.html" class="full"></a>
+        <div class="top"><img src="img/projects/turnalert.png" alt=""><span class="num">// 15</span></div>
+        <h3>Turn Alert</h3>
+        <p>Stock investment & analysis with real-time charts.</p>
+        <div class="tags"><span class="tag acc">FinTech</span></div>
+      </div>
+      <div class="proj reveal" data-cat="mobile"><a href="projects/sporttimego.html" class="full"></a>
+        <div class="top"><img src="img/projects/sporttimego.png" alt=""><span class="num">// 16</span></div>
+        <h3>SportTimeGo</h3>
+        <p>Sports app with APNS & GCM push notifications.</p>
+        <div class="tags"><span class="tag">Sports</span></div>
+      </div>
+      <div class="proj alt reveal" data-cat="web"><a href="projects/cny-racing.html" class="full"></a>
+        <div class="top"><img src="img/projects/racing_game.png" alt=""><span class="num">// 17</span></div>
+        <h3>CNY Racing</h3>
+        <p>Taxi racing mini game with Chinese New Year theme.</p>
+        <div class="tags"><span class="tag">Game</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TECH -->
+<section id="tech" class="section">
+  <div class="col">
+    <div class="sec-head reveal">
+      <div class="sec-num">04</div>
+      <h2>The <span class="accent">stack.</span></h2>
+    </div>
+    <div class="tech-block">
+      <div class="tech-pill">Flutter</div><div class="tech-pill">Swift</div><div class="tech-pill">Kotlin</div><div class="tech-pill">React Native</div>
+      <div class="tech-pill">React</div><div class="tech-pill">Next.js</div><div class="tech-pill">Vue.js</div><div class="tech-pill">Nuxt</div>
+      <div class="tech-pill">TypeScript</div><div class="tech-pill">Rust</div><div class="tech-pill">Go</div><div class="tech-pill">Python</div>
+      <div class="tech-pill">AWS</div><div class="tech-pill">Firebase</div><div class="tech-pill">Docker</div><div class="tech-pill">Postgres</div>
+      <div class="tech-pill">Solidity</div><div class="tech-pill">Aiken</div><div class="tech-pill">Anchor</div><div class="tech-pill">Node.js</div>
+      <div class="tech-pill">Figma</div><div class="tech-pill">Web3.js</div><div class="tech-pill">MQTT</div><div class="tech-pill">Redis</div>
+    </div>
+  </div>
+</section>
+
+<!-- JOURNEY -->
+<section id="journey" class="section alt">
+  <div class="col">
+    <div class="sec-head reveal">
+      <div class="sec-num">05</div>
+      <h2>The <span class="accent">journey.</span></h2>
+    </div>
+    <div class="j-list">
+      <div class="j-row reveal"><span class="role">Consultant</span><div class="name">Strike Finance</div><div class="desc">DeFi perpetuals · CLOB · sub-1s execution · Cardano / ETH / SOL</div><div class="arr">→</div></div>
+      <div class="j-row reveal"><span class="role">Builder</span><div class="name">mAIcrotrader</div><div class="desc">AI multi-agent crypto trading platform · AutoGen</div><div class="arr">→</div></div>
+      <div class="j-row reveal"><span class="role">CTO</span><div class="name">Carbon · xBeefi / Prodds</div><div class="desc">Blockchain prediction on Base · Draper U · SF hackathon winner</div><div class="arr">→</div></div>
+      <div class="j-row reveal"><span class="role">Builder</span><div class="name">5GenCare</div><div class="desc">AI elderly & baby care · cry detection · sleep monitoring</div><div class="arr">→</div></div>
+      <div class="j-row reveal"><span class="role">Builder</span><div class="name">Peblx</div><div class="desc">AI legal & compliance · legislation processing · RAG retrieval</div><div class="arr">→</div></div>
+      <div class="j-row reveal"><span class="role">Builder</span><div class="name">Sellwyse / Athion</div><div class="desc">Sales platform + health & fitness tech for coaches</div><div class="arr">→</div></div>
+      <div class="j-row reveal"><span class="role">Lead Dev</span><div class="name">Fusang</div><div class="desc">Licensed digital asset exchange · Go backend</div><div class="arr">→</div></div>
+      <div class="j-row reveal"><span class="role">Sr. Consultant</span><div class="name">HK Disneyland App</div><div class="desc">KEYTEO · official app · wait times · park map · shows</div><div class="arr">→</div></div>
+      <div class="j-row reveal"><span class="role">Tech Lead</span><div class="name">UleEco — Motorola Nursery</div><div class="desc">Baby monitoring + ChillaxCare home security apps</div><div class="arr">→</div></div>
+      <div class="j-row reveal"><span class="role">Mobile Dev</span><div class="name">MobiJuce</div><div class="desc">Mobile charging lifestyle · Swift 5.0</div><div class="arr">→</div></div>
+      <div class="j-row reveal"><span class="role">Associate</span><div class="name">HK PolyU — Capstone Ninja</div><div class="desc">React Native FYP management app</div><div class="arr">→</div></div>
+      <div class="j-row reveal"><span class="role">Developer</span><div class="name">C&T — ChainStorePlus</div><div class="desc">Enterprise retail mPOS · Swift 4.1</div><div class="arr">→</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="contact" class="cta">
+  <div class="col">
+    <h2 class="display">Let's <span class="outline">build</span><br/>something.</h2>
+    <div class="cta-btns">
+      <a href="mailto:ken@codemug.io" class="dark">ken@codemug.io</a>
+      <a href="mailto:dev@kenhung.io">dev@kenhung.io</a>
+      <a href="https://t.me/kenhunghk">Telegram @kenhunghk</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div>© 2026 CodeMug Limited</div>
+  <div>// Made in Hong Kong //</div>
+</footer>
+
+<script>
+const io = new IntersectionObserver(es => es.forEach(e => e.isIntersecting && e.target.classList.add('in')), {threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+document.querySelectorAll('.filt').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.filt').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    const f = b.dataset.f;
+    document.querySelectorAll('.proj').forEach(p => {
+      const c = p.dataset.cat || '';
+      p.classList.toggle('hide', f !== 'all' && !c.includes(f));
+    });
+  });
+});
+</script>
+</body>
+</html>

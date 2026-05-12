@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>codemug ~ $</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0D1117;
+  --bg-2: #161B22;
+  --bg-3: #1C2128;
+  --border: #30363D;
+  --text: #E6EDF3;
+  --text-dim: #8B949E;
+  --text-mid: #7D8590;
+  --green: #3FB950;
+  --red: #F85149;
+  --yellow: #D29922;
+  --orange: #FF8742;
+  --blue: #58A6FF;
+  --purple: #BC8CFF;
+  --pink: #F778BA;
+  --cyan: #76E3EA;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  font-family:'JetBrains Mono',monospace; background:var(--bg); color:var(--text);
+  font-size:14px; line-height:1.6; -webkit-font-smoothing:antialiased;
+  background-image:
+    radial-gradient(at 0% 0%, rgba(63,185,80,0.04) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(88,166,255,0.04) 0px, transparent 50%);
+  background-attachment:fixed;
+}
+.sans { font-family:'Inter',sans-serif; }
+a { color:var(--blue); text-decoration:none; }
+a:hover { text-decoration:underline; }
+
+/* TOPBAR */
+.topbar {
+  position:sticky; top:0; z-index:100; background:rgba(13,17,23,0.85); backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border); padding:0.7rem 1.5rem;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.topbar .left { display:flex; gap:0.5rem; align-items:center; }
+.dots { display:flex; gap:0.4rem; margin-right:1rem; }
+.dot { width:10px; height:10px; border-radius:50%; }
+.dot.r { background:#FF5F56; } .dot.y { background:#FFBD2E; } .dot.g { background:#27C93F; }
+.topbar .tab { padding:0.4rem 0.8rem; background:var(--bg-2); border:1px solid var(--border); border-radius:6px 6px 0 0; font-size:0.78rem; color:var(--text-dim); }
+.topbar .tab.active { background:var(--bg-3); color:var(--text); }
+.topbar nav { display:flex; gap:1.5rem; font-size:0.82rem; }
+.topbar nav a { color:var(--text-dim); }
+.topbar nav a:hover { color:var(--green); text-decoration:none; }
+.topbar nav a::before { content:'#'; color:var(--text-mid); }
+
+/* CONTAINER */
+.col { max-width:1200px; margin:0 auto; padding:0 1.5rem; }
+.col-narrow { max-width:900px; }
+
+/* SECTIONS */
+.section { padding:4rem 0; }
+
+/* PROMPT LINE */
+.prompt {
+  display:flex; gap:0.7rem; align-items:center; font-size:0.85rem;
+  color:var(--text-dim); margin-bottom:1.2rem;
+}
+.prompt .user { color:var(--green); }
+.prompt .arrow { color:var(--purple); }
+.prompt .path { color:var(--blue); }
+.prompt .branch { color:var(--yellow); }
+.prompt .cmd { color:var(--text); }
+.prompt::before {
+  content:'$'; color:var(--green); font-weight:700;
+}
+
+/* HERO */
+.hero { padding:6rem 0 4rem; }
+.hero .ascii {
+  font-size:0.7rem; line-height:1.1; color:var(--green); margin-bottom:2rem;
+  white-space:pre; opacity:0.7;
+}
+.hero h1 {
+  font-family:'Inter',sans-serif; font-size:4.2rem; font-weight:700; letter-spacing:-0.04em;
+  line-height:1.05; margin-bottom:1.5rem;
+}
+.hero h1 .cursor { display:inline-block; width:0.5em; height:0.85em; background:var(--green); vertical-align:middle; margin-left:0.1em; animation:blink 1s steps(2) infinite; }
+@keyframes blink { to { opacity:0; } }
+.hero h1 .accent { color:var(--green); }
+.hero h1 .comment::before { content:'// '; color:var(--text-mid); font-weight:300; }
+.hero h1 .comment { color:var(--text-mid); font-weight:400; font-size:0.75em; display:block; margin-top:0.6rem; }
+.hero .lede { font-size:1rem; color:var(--text-dim); max-width:640px; margin-bottom:2rem; line-height:1.7; }
+.hero .lede .str { color:var(--cyan); }
+.hero .lede .kw { color:var(--pink); }
+.hero-btns { display:flex; gap:0.7rem; flex-wrap:wrap; }
+.btn {
+  display:inline-flex; align-items:center; gap:0.5rem; padding:0.6rem 1.2rem;
+  background:var(--bg-2); border:1px solid var(--border); border-radius:6px;
+  font-family:'JetBrains Mono',monospace; font-size:0.85rem; color:var(--text);
+  transition:all 0.15s;
+}
+.btn:hover { background:var(--bg-3); border-color:var(--green); text-decoration:none; }
+.btn.primary { background:var(--green); color:var(--bg); border-color:var(--green); font-weight:600; }
+.btn.primary:hover { background:#56D364; }
+.btn .kbd { padding:0.1rem 0.4rem; background:var(--bg-3); border:1px solid var(--border); border-radius:3px; font-size:0.7rem; color:var(--text-dim); }
+
+/* STATS — log lines */
+.log-block {
+  background:var(--bg-2); border:1px solid var(--border); border-radius:8px;
+  padding:1.2rem; margin-top:3rem; font-size:0.82rem;
+}
+.log-block .log-line { display:flex; gap:0.7rem; padding:0.3rem 0; align-items:baseline; }
+.log-block .ts { color:var(--text-mid); }
+.log-block .lvl { padding:0 0.4rem; font-weight:600; min-width:60px; text-align:center; border-radius:3px; }
+.log-block .lvl.ok { background:rgba(63,185,80,0.15); color:var(--green); }
+.log-block .lvl.info { background:rgba(88,166,255,0.15); color:var(--blue); }
+.log-block .lvl.warn { background:rgba(210,153,34,0.15); color:var(--yellow); }
+.log-block .lvl.met { background:rgba(188,140,255,0.15); color:var(--purple); }
+.log-block .msg { color:var(--text-dim); }
+.log-block .num { color:var(--green); font-weight:600; }
+
+/* CODE BLOCK */
+.code {
+  background:var(--bg-2); border:1px solid var(--border); border-radius:8px;
+  font-size:0.85rem; overflow:hidden;
+}
+.code-head { background:var(--bg-3); padding:0.5rem 1rem; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; color:var(--text-dim); font-size:0.78rem; }
+.code-head .lang { color:var(--orange); }
+.code-body { padding:1.2rem; line-height:1.7; }
+.code .kw { color:var(--pink); }
+.code .fn { color:var(--purple); }
+.code .str { color:var(--cyan); }
+.code .num { color:var(--orange); }
+.code .com { color:var(--text-mid); }
+.code .prop { color:var(--blue); }
+
+/* SECTION HEAD */
+.sec-head { margin-bottom:2rem; }
+.sec-head .label { color:var(--text-mid); font-size:0.78rem; margin-bottom:0.5rem; }
+.sec-head .label .hash { color:var(--green); }
+.sec-head h2 { font-family:'Inter',sans-serif; font-size:2.2rem; font-weight:700; letter-spacing:-0.025em; }
+.sec-head h2 .accent { color:var(--green); }
+.sec-head p { color:var(--text-dim); font-size:0.92rem; margin-top:0.6rem; max-width:640px; }
+
+/* SERVICES — file list */
+.svc-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:0.7rem; }
+.svc {
+  background:var(--bg-2); border:1px solid var(--border); border-radius:8px;
+  padding:1.4rem; transition:all 0.2s; position:relative;
+}
+.svc:hover { border-color:var(--green); transform:translateY(-2px); }
+.svc .top { display:flex; align-items:center; gap:0.7rem; margin-bottom:1rem; font-size:0.78rem; color:var(--text-mid); }
+.svc .top .pkg { color:var(--blue); }
+.svc .top .ver { color:var(--green); }
+.svc h3 { font-family:'Inter',sans-serif; font-size:1.15rem; font-weight:600; margin-bottom:0.4rem; }
+.svc p { color:var(--text-dim); font-size:0.85rem; line-height:1.6; }
+.svc .tags { display:flex; gap:0.4rem; margin-top:1rem; flex-wrap:wrap; }
+.svc .tag { font-size:0.7rem; padding:0.15rem 0.45rem; background:var(--bg-3); border:1px solid var(--border); border-radius:3px; color:var(--text-dim); }
+.svc .tag.kw { color:var(--pink); border-color:rgba(247,120,186,0.3); }
+.svc .tag.str { color:var(--cyan); border-color:rgba(118,227,234,0.3); }
+
+/* PROJECTS — terminal cards */
+.proj-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:0.7rem; }
+.proj {
+  background:var(--bg-2); border:1px solid var(--border); border-radius:8px;
+  padding:1.3rem; transition:all 0.2s; position:relative; display:flex; flex-direction:column;
+}
+.proj:hover { border-color:var(--green); }
+.proj:hover::after {
+  content:'$ open'; position:absolute; top:0.7rem; right:0.7rem; font-size:0.7rem;
+  color:var(--green); background:var(--bg-3); padding:0.2rem 0.5rem; border-radius:3px;
+}
+.proj a.full { position:absolute; inset:0; z-index:2; }
+.proj .top { display:flex; align-items:center; gap:0.6rem; margin-bottom:0.8rem; }
+.proj .top img { width:30px; height:30px; border-radius:6px; object-fit:contain; background:var(--bg-3); padding:3px; }
+.proj .top .letter { width:30px; height:30px; border-radius:6px; background:var(--green); color:var(--bg); display:flex; align-items:center; justify-content:center; font-weight:700; }
+.proj .top .name { font-size:0.78rem; color:var(--text-mid); }
+.proj h3 { font-family:'Inter',sans-serif; font-size:1rem; font-weight:600; margin-bottom:0.3rem; }
+.proj p { color:var(--text-dim); font-size:0.82rem; line-height:1.55; flex:1; }
+.proj .meta { display:flex; gap:0.7rem; margin-top:0.8rem; font-size:0.72rem; color:var(--text-mid); }
+.proj .meta .star { color:var(--yellow); }
+.proj .meta .lang::before { content:'●'; margin-right:0.3rem; color:var(--blue); }
+
+/* FILTERS — like grep flags */
+.filters { display:flex; gap:0.4rem; margin-bottom:1.5rem; flex-wrap:wrap; align-items:center; }
+.filters .prefix { color:var(--text-mid); font-size:0.85rem; margin-right:0.4rem; }
+.filt {
+  padding:0.3rem 0.8rem; background:var(--bg-2); border:1px solid var(--border);
+  border-radius:6px; font-family:'JetBrains Mono',monospace; font-size:0.78rem;
+  color:var(--text-dim); cursor:pointer; transition:all 0.15s;
+}
+.filt::before { content:'--'; color:var(--text-mid); margin-right:0.2rem; }
+.filt:hover, .filt.active { background:rgba(63,185,80,0.1); border-color:var(--green); color:var(--green); }
+.filt.active::before { color:var(--green); }
+.proj.hide { display:none; }
+
+/* TECH — package.json */
+.pkg-json {
+  background:var(--bg-2); border:1px solid var(--border); border-radius:8px;
+  padding:1.5rem; font-size:0.85rem; line-height:1.8;
+}
+.pkg-json .brace, .pkg-json .bracket, .pkg-json .colon, .pkg-json .comma { color:var(--text-mid); }
+.pkg-json .key { color:var(--blue); }
+.pkg-json .val { color:var(--cyan); }
+.pkg-json .indent { padding-left:1.5rem; }
+.pkg-json .pill {
+  display:inline-block; padding:0.1rem 0.5rem; margin:0.1rem 0.15rem;
+  background:var(--bg-3); border:1px solid var(--border); border-radius:4px;
+  color:var(--text); font-size:0.78rem;
+}
+.pkg-json .pill:hover { border-color:var(--green); color:var(--green); }
+
+/* JOURNEY — git log */
+.git-log {
+  background:var(--bg-2); border:1px solid var(--border); border-radius:8px;
+  padding:1.5rem; font-size:0.82rem;
+}
+.commit { display:flex; gap:1rem; padding:0.8rem 0; border-bottom:1px solid var(--border); align-items:flex-start; }
+.commit:last-child { border-bottom:none; }
+.commit .hash { color:var(--yellow); font-weight:500; }
+.commit .body { flex:1; }
+.commit .head { display:flex; align-items:center; gap:0.7rem; flex-wrap:wrap; }
+.commit .ref { padding:0.1rem 0.5rem; background:var(--bg-3); border:1px solid var(--border); border-radius:3px; font-size:0.7rem; color:var(--green); }
+.commit .ref.tag { color:var(--purple); }
+.commit .msg { font-family:'Inter',sans-serif; font-size:1rem; font-weight:600; margin-top:0.3rem; }
+.commit .msg .em { color:var(--green); }
+.commit .desc { color:var(--text-dim); font-size:0.82rem; margin-top:0.25rem; line-height:1.55; }
+.commit .author { color:var(--text-mid); font-size:0.74rem; margin-top:0.3rem; }
+
+/* CTA */
+.cta {
+  background:linear-gradient(135deg,rgba(63,185,80,0.05),rgba(88,166,255,0.05));
+  border:1px solid var(--border); border-radius:12px; padding:3rem; margin:3rem 0;
+  text-align:center;
+}
+.cta .label { color:var(--green); font-size:0.78rem; margin-bottom:1rem; }
+.cta h2 { font-family:'Inter',sans-serif; font-size:2.4rem; font-weight:700; letter-spacing:-0.025em; margin-bottom:0.8rem; }
+.cta h2 .em { color:var(--green); }
+.cta p { color:var(--text-dim); margin-bottom:2rem; }
+.cta-btns { display:flex; gap:0.7rem; justify-content:center; flex-wrap:wrap; }
+
+/* TYPING INTRO */
+.typing-line { font-size:1rem; color:var(--text-dim); display:flex; gap:0.7rem; margin-bottom:0.5rem; flex-wrap:wrap; }
+.typing-line::before { content:'>'; color:var(--green); }
+
+footer {
+  padding:2rem 1.5rem; border-top:1px solid var(--border); margin-top:3rem;
+  display:flex; justify-content:space-between; font-size:0.78rem; color:var(--text-mid);
+}
+
+.reveal { opacity:0; transform:translateY(15px); transition:opacity 0.6s, transform 0.6s; }
+.reveal.in { opacity:1; transform:none; }
+
+@media(max-width:900px) {
+  .topbar .tab, .topbar nav { display:none; }
+  .hero h1 { font-size:2.4rem; }
+  .hero .ascii { font-size:0.55rem; }
+  .svc-grid, .proj-grid { grid-template-columns:1fr; }
+  .cta h2 { font-size:1.6rem; }
+  .cta { padding:2rem 1.2rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOP -->
+<div class="topbar">
+  <div class="left">
+    <div class="dots"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></div>
+    <span class="tab active">~/codemug</span>
+    <span class="tab">~/projects</span>
+    <span class="tab">+</span>
+  </div>
+  <nav>
+    <a href="#services">services</a>
+    <a href="#work">work</a>
+    <a href="#tech">stack</a>
+    <a href="#journey">journey</a>
+    <a href="#contact">contact</a>
+  </nav>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="col">
+    <div class="prompt"><span class="user">codemug</span>@<span class="path">hk</span>:<span class="branch">main</span> <span class="arrow">$</span> <span class="cmd">cat about.md</span></div>
+    <div class="ascii">  ____          _      __  __
+ / ___|___   __| | ___|  \/  |_   _  __ _
+| |   / _ \ / _` |/ _ \ |\/| | | | |/ _` |
+| |__| (_) | (_| |  __/ |  | | |_| | (_| |
+ \____\___/ \__,_|\___|_|  |_|\__,_|\__, |
+                                    |___/ </div>
+    <h1>We ship <span class="accent">digital</span> products.<span class="cursor"></span><span class="comment">a Hong Kong software studio</span></h1>
+    <p class="lede">CodeMug is a Hong Kong-based software studio. We build <span class="str">"mobile apps"</span>, <span class="str">"web platforms"</span>, <span class="str">"IoT systems"</span>, and <span class="str">"blockchain solutions"</span> — <span class="kw">for</span> ambitious teams.</p>
+    <div class="hero-btns">
+      <a href="#work" class="btn primary">▶ ./view-work.sh</a>
+      <a href="#contact" class="btn">$ contact <span class="kbd">⌘K</span></a>
+    </div>
+
+    <div class="log-block">
+      <div class="log-line"><span class="ts">2026-05-12 14:32:01</span><span class="lvl ok">OK</span><span class="msg">deployed <span class="num">50+</span> apps to production</span></div>
+      <div class="log-line"><span class="ts">2026-05-12 14:32:02</span><span class="lvl info">INFO</span><span class="msg">platform TVL · <span class="num">$50M</span> · XSTRO GameFi</span></div>
+      <div class="log-line"><span class="ts">2026-05-12 14:32:03</span><span class="lvl met">METRIC</span><span class="msg">industries served · <span class="num">6</span></span></div>
+      <div class="log-line"><span class="ts">2026-05-12 14:32:04</span><span class="lvl met">METRIC</span><span class="msg">orgs & teams worked with · <span class="num">17</span></span></div>
+      <div class="log-line"><span class="ts">2026-05-12 14:32:05</span><span class="lvl ok">OK</span><span class="msg">audit status · <span class="num" style="color:var(--green);">passed</span> (SlowMist · XSTRO)</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section id="services" class="section">
+  <div class="col">
+    <div class="prompt"><span class="user">codemug</span>@<span class="path">hk</span> <span class="arrow">$</span> <span class="cmd">ls -la ./services</span></div>
+    <div class="sec-head reveal">
+      <div class="label"><span class="hash">#</span> services.module</div>
+      <h2>What we <span class="accent">build()</span>.</h2>
+      <p>End-to-end product development — from concept and design through to production deploy and scale.</p>
+    </div>
+
+    <div class="svc-grid">
+      <div class="svc reveal">
+        <div class="top"><span class="pkg">mobile-app-dev</span>@<span class="ver">latest</span></div>
+        <h3>Mobile App Development</h3>
+        <p>Cross-platform applications built with Flutter, Swift, and React Native for iOS and Android.</p>
+        <div class="tags"><span class="tag kw">Flutter</span><span class="tag kw">Swift</span><span class="tag kw">Kotlin</span><span class="tag">React Native</span></div>
+      </div>
+      <div class="svc reveal">
+        <div class="top"><span class="pkg">web-platform</span>@<span class="ver">latest</span></div>
+        <h3>Web Application Development</h3>
+        <p>Modern web apps with React, Vue.js, Next.js, and Nuxt for scalable digital platforms.</p>
+        <div class="tags"><span class="tag kw">React</span><span class="tag kw">Vue</span><span class="tag">Next.js</span><span class="tag">Nuxt</span></div>
+      </div>
+      <div class="svc reveal">
+        <div class="top"><span class="pkg">iot-systems</span>@<span class="ver">latest</span></div>
+        <h3>IoT Solutions</h3>
+        <p>Real-time monitoring systems with AWS IoT, sensor integration, and automated alerts.</p>
+        <div class="tags"><span class="tag str">AWS IoT</span><span class="tag">MQTT</span><span class="tag">Lambda</span></div>
+      </div>
+      <div class="svc reveal">
+        <div class="top"><span class="pkg">blockchain-web3</span>@<span class="ver">latest</span></div>
+        <h3>Blockchain & Web3</h3>
+        <p>Smart contracts, DeFi platforms, NFT ecosystems, and GameFi on Ethereum, Solana, and Cardano.</p>
+        <div class="tags"><span class="tag kw">Solidity</span><span class="tag kw">Aiken</span><span class="tag">Anchor</span></div>
+      </div>
+      <div class="svc reveal">
+        <div class="top"><span class="pkg">ai-ml</span>@<span class="ver">latest</span></div>
+        <h3>AI & Machine Learning</h3>
+        <p>AI agents, NLP, computer vision, and predictive analytics solutions.</p>
+        <div class="tags"><span class="tag str">LangChain</span><span class="tag str">AutoGen</span><span class="tag kw">Python</span></div>
+      </div>
+      <div class="svc reveal">
+        <div class="top"><span class="pkg">design-system</span>@<span class="ver">latest</span></div>
+        <h3>UI/UX Design</h3>
+        <p>User-centered design creating intuitive interfaces and seamless digital experiences.</p>
+        <div class="tags"><span class="tag">Figma</span><span class="tag str">Design Sys</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WORK -->
+<section id="work" class="section">
+  <div class="col">
+    <div class="prompt"><span class="user">codemug</span>@<span class="path">hk</span> <span class="arrow">$</span> <span class="cmd">grep -r --include="*.proj" .</span></div>
+    <div class="sec-head reveal">
+      <div class="label"><span class="hash">#</span> repositories</div>
+      <h2>Selected <span class="accent">work/</span></h2>
+      <p>Projects across finance, healthcare, lifestyle, and Web3 — filter with the flags below.</p>
+    </div>
+
+    <div class="filters">
+      <span class="prefix">filter:</span>
+      <button class="filt active" data-f="all">all</button>
+      <button class="filt" data-f="mobile">mobile</button>
+      <button class="filt" data-f="web">web</button>
+      <button class="filt" data-f="iot">iot</button>
+      <button class="filt" data-f="web3">web3</button>
+      <button class="filt" data-f="ai">ai</button>
+    </div>
+
+    <div class="proj-grid">
+      <div class="proj reveal" data-cat="ai"><a href="projects/provelo.html" class="full"></a>
+        <div class="top"><img src="img/projects/provelo.png" alt=""><span class="name">codemug/provelo</span></div>
+        <h3>Provelo AI</h3><p>AI developer assessment with rigged AI traps & 6-dimension scoring.</p>
+        <div class="meta"><span class="lang">TypeScript</span><span class="star">★ AI/SaaS</span></div>
+      </div>
+      <div class="proj reveal" data-cat="iot"><a href="projects/cyberport.html" class="full"></a>
+        <div class="top"><div class="letter">C</div><span class="name">codemug/cyberport</span></div>
+        <h3>Cyberport AC Monitoring</h3><p>Real-time temperature monitoring for HK Cyberport facilities.</p>
+        <div class="meta"><span class="lang">Python</span><span class="star">★ IoT</span></div>
+      </div>
+      <div class="proj reveal" data-cat="web3"><a href="projects/xstro.html" class="full"></a>
+        <div class="top"><img src="img/projects/xstro.png" alt=""><span class="name">codemug/xstro</span></div>
+        <h3>XSTRO — XGameFi</h3><p>$50M NFT staking GameFi platform. Passed SlowMist audit.</p>
+        <div class="meta"><span class="lang" style="color:var(--purple);">Solidity</span><span class="star">★ GameFi</span></div>
+      </div>
+      <div class="proj reveal" data-cat="iot"><a href="projects/solar-inverter.html" class="full"></a>
+        <div class="top"><div class="letter" style="background:var(--yellow);color:var(--bg);">S</div><span class="name">codemug/solar-inverter</span></div>
+        <h3>Solar Inverter Platform</h3><p>Flutter + AWS IoT for inverter management and monitoring.</p>
+        <div class="meta"><span class="lang">Dart</span><span class="star">★ IoT/AWS</span></div>
+      </div>
+      <div class="proj reveal" data-cat="web"><a href="projects/imbert.html" class="full"></a>
+        <div class="top"><div class="letter" style="background:var(--blue);color:var(--bg);">I</div><span class="name">codemug/imbert</span></div>
+        <h3>Imbert Property</h3><p>Property management website with viewing scheduler & SEO.</p>
+        <div class="meta"><span class="lang">JavaScript</span><span class="star">★ SEO</span></div>
+      </div>
+      <div class="proj reveal" data-cat="web"><a href="projects/grappas.html" class="full"></a>
+        <div class="top"><div class="letter" style="background:var(--green);color:var(--bg);">G</div><span class="name">codemug/grappas</span></div>
+        <h3>Grappas Restaurant</h3><p>Restaurant website with reservation system and CMS.</p>
+        <div class="meta"><span class="lang">PHP</span><span class="star">★ F&B</span></div>
+      </div>
+      <div class="proj reveal" data-cat="web"><a href="projects/sanmiguel.html" class="full"></a>
+        <div class="top"><div class="letter" style="background:var(--pink);color:var(--bg);">S</div><span class="name">codemug/sanmiguel</span></div>
+        <h3>San Miguel Draw</h3><p>Real-time lucky draw platform for San Miguel events.</p>
+        <div class="meta"><span class="lang">JavaScript</span><span class="star">★ Realtime</span></div>
+      </div>
+      <div class="proj reveal" data-cat="mobile"><a href="projects/lovefitness.html" class="full"></a>
+        <div class="top"><img src="img/projects/lovefitness.png" alt=""><span class="name">codemug/lovefitness</span></div>
+        <h3>Love Fitness</h3><p>Fitness app for Rotary Club & Tin Shing Dojang.</p>
+        <div class="meta"><span class="lang">Dart</span><span class="star">★ Fitness</span></div>
+      </div>
+      <div class="proj reveal" data-cat="web"><a href="projects/apollo.html" class="full"></a>
+        <div class="top"><img src="img/projects/apollo.png" alt=""><span class="name">codemug/apollo</span></div>
+        <h3>Apollo Future Mobility</h3><p>Luxury car CMS with real-time HKEX data scraper.</p>
+        <div class="meta"><span class="lang">JavaScript</span><span class="star">★ CMS</span></div>
+      </div>
+      <div class="proj reveal" data-cat="mobile"><a href="projects/dash-events.html" class="full"></a>
+        <div class="top"><div class="letter" style="background:var(--orange);color:var(--bg);">D</div><span class="name">codemug/dash-events</span></div>
+        <h3>D-ASH Events</h3><p>Event ticketing with integrated payments and scanner SDK.</p>
+        <div class="meta"><span class="lang">Dart</span><span class="star">★ Events</span></div>
+      </div>
+      <div class="proj reveal" data-cat="mobile"><a href="projects/haira.html" class="full"></a>
+        <div class="top"><img src="img/projects/haira.png" alt=""><span class="name">codemug/haira</span></div>
+        <h3>Haira</h3><p>Hong Kong hairstylist discovery platform.</p>
+        <div class="meta"><span class="lang">Dart</span><span class="star">★ Lifestyle</span></div>
+      </div>
+      <div class="proj reveal" data-cat="mobile web"><a href="projects/plandlord.html" class="full"></a>
+        <div class="top"><img src="img/projects/plandlord.png" alt=""><span class="name">codemug/plandlord</span></div>
+        <h3>PLandlord</h3><p>Property management app & website for Westona Limited.</p>
+        <div class="meta"><span class="lang">Dart</span><span class="star">★ Property</span></div>
+      </div>
+      <div class="proj reveal" data-cat="mobile"><a href="projects/charclevpn.html" class="full"></a>
+        <div class="top"><img src="img/projects/charclevpn.png" alt=""><span class="name">codemug/charclevpn</span></div>
+        <h3>CharcleVPN</h3><p>VPN service for iOS (Swift) and Android (Flutter).</p>
+        <div class="meta"><span class="lang">Swift</span><span class="star">★ VPN</span></div>
+      </div>
+      <div class="proj reveal" data-cat="mobile"><a href="projects/wedding-planda.html" class="full"></a>
+        <div class="top"><img src="img/projects/wedding_planda.png" alt=""><span class="name">codemug/wedding-planda</span></div>
+        <h3>Wedding Planda</h3><p>Wedding planner mobile application.</p>
+        <div class="meta"><span class="lang">Dart</span><span class="star">★ Lifestyle</span></div>
+      </div>
+      <div class="proj reveal" data-cat="mobile"><a href="projects/turnalert.html" class="full"></a>
+        <div class="top"><img src="img/projects/turnalert.png" alt=""><span class="name">codemug/turnalert</span></div>
+        <h3>Turn Alert</h3><p>Stock investment & analysis with real-time charts.</p>
+        <div class="meta"><span class="lang">Dart</span><span class="star">★ FinTech</span></div>
+      </div>
+      <div class="proj reveal" data-cat="mobile"><a href="projects/sporttimego.html" class="full"></a>
+        <div class="top"><img src="img/projects/sporttimego.png" alt=""><span class="name">codemug/sporttimego</span></div>
+        <h3>SportTimeGo</h3><p>Sports app with APNS & GCM push notifications.</p>
+        <div class="meta"><span class="lang">Swift</span><span class="star">★ Sports</span></div>
+      </div>
+      <div class="proj reveal" data-cat="web"><a href="projects/cny-racing.html" class="full"></a>
+        <div class="top"><img src="img/projects/racing_game.png" alt=""><span class="name">codemug/cny-racing</span></div>
+        <h3>CNY Racing Game</h3><p>Taxi racing mini game with Chinese New Year theme.</p>
+        <div class="meta"><span class="lang">JavaScript</span><span class="star">★ Game</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TECH -->
+<section id="tech" class="section">
+  <div class="col">
+    <div class="prompt"><span class="user">codemug</span>@<span class="path">hk</span> <span class="arrow">$</span> <span class="cmd">cat package.json</span></div>
+    <div class="sec-head reveal">
+      <div class="label"><span class="hash">#</span> stack.json</div>
+      <h2>Battle-tested <span class="accent">dependencies</span>.</h2>
+    </div>
+    <div class="pkg-json reveal">
+      <div><span class="brace">{</span></div>
+      <div class="indent"><span class="key">"mobile"</span><span class="colon">:</span> <span class="bracket">[</span>
+        <span class="pill">Flutter</span><span class="pill">Swift</span><span class="pill">Kotlin</span><span class="pill">React Native</span>
+        <span class="bracket">]</span><span class="comma">,</span>
+      </div>
+      <div class="indent"><span class="key">"web"</span><span class="colon">:</span> <span class="bracket">[</span>
+        <span class="pill">React</span><span class="pill">Next.js</span><span class="pill">Vue.js</span><span class="pill">Nuxt.js</span><span class="pill">TypeScript</span>
+        <span class="bracket">]</span><span class="comma">,</span>
+      </div>
+      <div class="indent"><span class="key">"backend"</span><span class="colon">:</span> <span class="bracket">[</span>
+        <span class="pill">Rust</span><span class="pill">Go</span><span class="pill">Python</span><span class="pill">Node.js</span>
+        <span class="bracket">]</span><span class="comma">,</span>
+      </div>
+      <div class="indent"><span class="key">"web3"</span><span class="colon">:</span> <span class="bracket">[</span>
+        <span class="pill">Solidity</span><span class="pill">Aiken</span><span class="pill">Anchor</span>
+        <span class="bracket">]</span><span class="comma">,</span>
+      </div>
+      <div class="indent"><span class="key">"infra"</span><span class="colon">:</span> <span class="bracket">[</span>
+        <span class="pill">AWS</span><span class="pill">Firebase</span><span class="pill">Docker</span><span class="pill">PostgreSQL</span>
+        <span class="bracket">]</span>
+      </div>
+      <div><span class="brace">}</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- JOURNEY -->
+<section id="journey" class="section">
+  <div class="col">
+    <div class="prompt"><span class="user">codemug</span>@<span class="path">hk</span> <span class="arrow">$</span> <span class="cmd">git log --oneline --all</span></div>
+    <div class="sec-head reveal">
+      <div class="label"><span class="hash">#</span> journey</div>
+      <h2>commit <span class="accent">history</span>.</h2>
+      <p>Products built along the way — roles, eras, and the things we've helped ship.</p>
+    </div>
+    <div class="git-log">
+      <div class="commit reveal"><span class="hash">a1f2c3d</span><div class="body"><div class="head"><span class="ref">HEAD</span><span class="ref tag">consultant</span></div><div class="msg">feat: <span class="em">Strike Finance</span> — DeFi perpetuals trading</div><div class="desc">CLOB engine across Cardano, Ethereum, Solana. Sub-1-second execution, non-custodial.</div><div class="author">role: Consultant · 2025</div></div></div>
+      <div class="commit reveal"><span class="hash">b2e3d4f</span><div class="body"><div class="head"><span class="ref tag">builder</span></div><div class="msg">feat: <span class="em">mAIcrotrader</span> — AI multi-agent platform</div><div class="desc">Crypto trading platform with drag-and-drop agent Studio on AutoGen.</div><div class="author">role: Builder · 2025</div></div></div>
+      <div class="commit reveal"><span class="hash">c3f4e5g</span><div class="body"><div class="head"><span class="ref tag">cto</span></div><div class="msg">feat: <span class="em">Carbon Technology</span> — xBeefi / Prodds on Base</div><div class="desc">Blockchain prediction platform. Draper University (1 of 400+), won SF hackathon.</div><div class="author">role: CTO · 2024</div></div></div>
+      <div class="commit reveal"><span class="hash">d4g5h6i</span><div class="body"><div class="head"><span class="ref tag">builder</span></div><div class="msg">feat: <span class="em">5GenCare</span> — AI elderly & baby care</div><div class="desc">Cry detection, sleep monitoring, daily life assistant suite.</div><div class="author">role: Builder · 2024</div></div></div>
+      <div class="commit reveal"><span class="hash">e5h6i7j</span><div class="body"><div class="head"><span class="ref tag">builder</span></div><div class="msg">feat: <span class="em">Peblx</span> — AI legal & compliance</div><div class="desc">Legislation processing and RAG retrieval platform.</div><div class="author">role: Builder · 2023</div></div></div>
+      <div class="commit reveal"><span class="hash">f6i7j8k</span><div class="body"><div class="head"><span class="ref tag">builder</span></div><div class="msg">feat: <span class="em">Sellwyse / Athion</span> — Sales + fitness tech</div><div class="desc">Sales platform + health & fitness tech for coaches with mobile apps and SDKs.</div><div class="author">role: Builder · 2023</div></div></div>
+      <div class="commit reveal"><span class="hash">g7j8k9l</span><div class="body"><div class="head"><span class="ref tag">lead</span></div><div class="msg">feat: <span class="em">Fusang</span> — Licensed digital asset exchange</div><div class="desc">Cross-platform mobile apps with Go backend.</div><div class="author">role: Lead Software Developer · 2022</div></div></div>
+      <div class="commit reveal"><span class="hash">h8k9l0m</span><div class="body"><div class="head"><span class="ref tag">sr-consultant</span></div><div class="msg">feat: <span class="em">KEYTEO</span> — Hong Kong Disneyland App</div><div class="desc">Official HK Disneyland app — wait times, park map, show schedules.</div><div class="author">role: Senior Mobile Consultant · 2021</div></div></div>
+      <div class="commit reveal"><span class="hash">i9l0m1n</span><div class="body"><div class="head"><span class="ref tag">tech-lead</span></div><div class="msg">feat: <span class="em">UleEco</span> — Motorola Nursery & ChillaxCare</div><div class="desc">Baby monitoring device management + home security apps.</div><div class="author">role: Technical Lead · 2020</div></div></div>
+      <div class="commit reveal"><span class="hash">j0m1n2o</span><div class="body"><div class="head"><span class="ref tag">mobile-dev</span></div><div class="msg">feat: <span class="em">MobiJuce</span> — Mobile charging lifestyle</div><div class="desc">Mobile charging lifestyle platform built with Swift 5.0.</div><div class="author">role: Mobile App Developer · 2019</div></div></div>
+      <div class="commit reveal"><span class="hash">k1n2o3p</span><div class="body"><div class="head"><span class="ref tag">associate</span></div><div class="msg">feat: <span class="em">HK Polytechnic University</span> — Capstone Ninja</div><div class="desc">React Native FYP management app.</div><div class="author">role: Project Associate · 2018</div></div></div>
+      <div class="commit reveal"><span class="hash">l2o3p4q</span><div class="body"><div class="head"><span class="ref tag">developer</span></div><div class="msg">feat: <span class="em">C&T Holdings</span> — ChainStorePlus</div><div class="desc">Enterprise retail mobile POS with Swift 4.1.</div><div class="author">role: Developer · 2017</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="contact" class="section">
+  <div class="col">
+    <div class="prompt"><span class="user">codemug</span>@<span class="path">hk</span> <span class="arrow">$</span> <span class="cmd">echo "let's build something together"</span></div>
+    <div class="cta reveal">
+      <div class="label">// connect</div>
+      <h2>Have a project <span class="em">in mind?</span></h2>
+      <p>Hong Kong-based · Working globally · Replying within 24h.</p>
+      <div class="cta-btns">
+        <a href="mailto:ken@codemug.io" class="btn primary">▶ ken@codemug.io</a>
+        <a href="mailto:dev@kenhung.io" class="btn">dev@kenhung.io</a>
+        <a href="https://t.me/kenhunghk" class="btn">@kenhunghk</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div>$ codemug --version 2026.05</div>
+  <div>© 2026 CodeMug Limited · Hong Kong</div>
+</footer>
+
+<script>
+const io = new IntersectionObserver(es => es.forEach(e => e.isIntersecting && e.target.classList.add('in')), {threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+document.querySelectorAll('.filt').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.filt').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    const f = b.dataset.f;
+    document.querySelectorAll('.proj').forEach(p => {
+      const c = p.dataset.cat || '';
+      p.classList.toggle('hide', f !== 'all' && !c.includes(f));
+    });
+  });
+});
+</script>
+</body>
+</html>

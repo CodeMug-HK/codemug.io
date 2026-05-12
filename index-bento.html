@@ -177,18 +177,12 @@ img { display:block; max-width:100%; }
 .h-summary p { font-size:1rem; color:var(--text-dim); line-height:1.65; }
 .h-summary p .em { color:var(--text); font-family:'Instrument Serif',serif; font-style:italic; font-size:1.1em; }
 
-.h-time { grid-column:span 4; grid-row:span 2; padding:0; overflow:hidden; }
-.h-time #dotCanvas { position:absolute; inset:0; width:100%; height:100%; display:block; }
-.h-time .time-overlay {
-  position:absolute; inset:0; padding:1.4rem 1.8rem; z-index:2;
-  display:flex; align-items:center; justify-content:space-between; gap:1rem;
-  pointer-events:none;
-}
+.h-time { grid-column:span 4; grid-row:span 2; padding:1.4rem 1.8rem; display:flex; align-items:center; justify-content:space-between; gap:1rem; }
 .h-time .now { font-family:'JetBrains Mono',monospace; font-size:2.4rem; font-weight:600; letter-spacing:-0.04em; line-height:1; }
 .h-time .now .sec { color:var(--text-mid); }
 .h-time .right { text-align:right; }
 .h-time .city { font-size:0.85rem; color:var(--text-dim); }
-.h-time .pin { display:inline-flex; align-items:center; gap:0.4rem; padding:0.2rem 0.5rem; background:rgba(16,185,129,0.12); color:var(--green); border-radius:100px; font-size:0.7rem; font-weight:500; margin-top:0.4rem; backdrop-filter:blur(8px); }
+.h-time .pin { display:inline-flex; align-items:center; gap:0.4rem; padding:0.2rem 0.5rem; background:rgba(16,185,129,0.12); color:var(--green); border-radius:100px; font-size:0.7rem; font-weight:500; margin-top:0.4rem; }
 .h-time .pin::before { content:''; width:5px; height:5px; border-radius:50%; background:var(--green); box-shadow:0 0 6px var(--green); }
 
 .h-marquee { grid-column:span 12; grid-row:span 1; padding:0; display:flex; align-items:center; overflow:hidden; }
@@ -415,7 +409,11 @@ footer { padding:2rem 0 3rem; text-align:center; font-size:0.78rem; color:var(--
       </div>
 
       <div class="tile h-time">
-        <canvas id="dotCanvas"></canvas>
+        <div class="now" id="clock">--:--</div>
+        <div class="right">
+          <div class="city">Hong Kong</div>
+          <div><span class="pin">Live</span></div>
+        </div>
       </div>
 
       <div class="tile h-marquee">
@@ -762,7 +760,6 @@ footer { padding:2rem 0 3rem; text-align:center; font-size:0.78rem; color:var(--
 
 <footer>© 2026 CodeMug Limited · 22°N 114°E</footer>
 
-<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
 <script>
 // Theme: localStorage > system preference > dark
 const saved = localStorage.getItem('theme');
@@ -777,100 +774,14 @@ document.getElementById('themeBtn').addEventListener('click', () => {
   localStorage.setItem('theme', next);
 });
 
-// three.js — rotating dot sphere in the time tile
-(function initDots() {
-  const canvas = document.getElementById('dotCanvas');
-  if (!canvas || !window.THREE) return;
-
-  const accentHex = () => {
-    const v = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
-    return v || '#FF6B35';
-  };
-
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 100);
-  camera.position.z = 3.2;
-
-  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
-  // Build particle sphere
-  const N = 1400;
-  const positions = new Float32Array(N * 3);
-  for (let i = 0; i < N; i++) {
-    const phi = Math.acos(2 * Math.random() - 1);
-    const theta = Math.random() * 2 * Math.PI;
-    const r = 1.2 + Math.random() * 0.05;
-    positions[i*3]   = r * Math.sin(phi) * Math.cos(theta);
-    positions[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
-    positions[i*3+2] = r * Math.cos(phi);
-  }
-  const geom = new THREE.BufferGeometry();
-  geom.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-
-  const mat = new THREE.PointsMaterial({
-    color: new THREE.Color(accentHex()),
-    size: 0.025, sizeAttenuation: true,
-    transparent: true, opacity: 0.85
-  });
-  const points = new THREE.Points(geom, mat);
-  scene.add(points);
-
-  // Second outer wireframe of dots for depth
-  const N2 = 600;
-  const pos2 = new Float32Array(N2 * 3);
-  for (let i = 0; i < N2; i++) {
-    const phi = Math.acos(2 * Math.random() - 1);
-    const theta = Math.random() * 2 * Math.PI;
-    const r = 1.6;
-    pos2[i*3]   = r * Math.sin(phi) * Math.cos(theta);
-    pos2[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
-    pos2[i*3+2] = r * Math.cos(phi);
-  }
-  const geom2 = new THREE.BufferGeometry();
-  geom2.setAttribute('position', new THREE.Float32BufferAttribute(pos2, 3));
-  const mat2 = new THREE.PointsMaterial({
-    color: new THREE.Color(accentHex()),
-    size: 0.015, sizeAttenuation: true,
-    transparent: true, opacity: 0.35
-  });
-  const points2 = new THREE.Points(geom2, mat2);
-  scene.add(points2);
-
-  function resize() {
-    const r = canvas.getBoundingClientRect();
-    renderer.setSize(r.width, r.height, false);
-    camera.aspect = r.width / r.height;
-    camera.updateProjectionMatrix();
-  }
-  resize();
-  new ResizeObserver(resize).observe(canvas);
-
-  // Update color on theme toggle
-  const obs = new MutationObserver(() => {
-    const c = new THREE.Color(accentHex());
-    mat.color = c; mat2.color = c;
-  });
-  obs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
-
-  let mx = 0, my = 0;
-  canvas.parentElement.addEventListener('mousemove', e => {
-    const r = canvas.getBoundingClientRect();
-    mx = ((e.clientX - r.left) / r.width - 0.5) * 0.6;
-    my = ((e.clientY - r.top) / r.height - 0.5) * 0.6;
-  });
-
-  function animate() {
-    requestAnimationFrame(animate);
-    points.rotation.y += 0.0025;
-    points.rotation.x = THREE.MathUtils.lerp(points.rotation.x, my, 0.05);
-    points2.rotation.y -= 0.0015;
-    points2.rotation.x = THREE.MathUtils.lerp(points2.rotation.x, -my * 0.5, 0.05);
-    points.rotation.z = THREE.MathUtils.lerp(points.rotation.z, mx * 0.3, 0.05);
-    renderer.render(scene, camera);
-  }
-  animate();
-})();
+function tick() {
+  const now = new Date();
+  const hk = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Hong_Kong' }));
+  const h = String(hk.getHours()).padStart(2,'0');
+  const m = String(hk.getMinutes()).padStart(2,'0');
+  document.getElementById('clock').innerHTML = `${h}<span class="sec">:</span>${m}`;
+}
+tick(); setInterval(tick, 1000);
 
 const io = new IntersectionObserver(es => es.forEach(e => e.isIntersecting && e.target.classList.add('in')), {threshold:0.05});
 document.querySelectorAll('.reveal').forEach(el => io.observe(el));
